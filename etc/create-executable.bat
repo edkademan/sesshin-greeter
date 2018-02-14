@@ -1,2 +1,2 @@
 raco exe sdocs.rkt
-raco distribute . sdocs.exe
+raco distribute bin sdocs.exe
