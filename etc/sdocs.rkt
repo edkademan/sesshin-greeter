@@ -718,7 +718,7 @@
 (define (process-command-line)
   (home-dir        (build-path "/home/ejk/rzc/sesshin-greeter"))
   (tmp-dir         (build-path "/tmp"))
-  (external-format 'json)
+  (external-format 'tsv)
   (command-line
    #:once-each
    [("-i" "--input-dir") d "directory containing source tables"
