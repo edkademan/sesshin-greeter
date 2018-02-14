@@ -1,0 +1,58 @@
+#!/bin/bash
+
+### Give this script the name of the directory containing the
+### "sesshin-tables.org" file and it will create separate files for
+### each of the tables in each of tsv, json and docx formats.
+###
+###   create-inputs ../test-data/bad
+
+org2docx() {
+  local base=$(basename $1 .org)
+  local dir=$(dirname $1)
+  local odtfile=${base}.odt
+  pandoc --from=org --to=odt --output=${odtfile} $1
+  lowriter --convert-to docx --outdir $dir ${odtfile}
+  rm ${odtfile}
+}
+
+docx2json() {
+  local base=$(basename $1 .docx)
+  local dir=$(dirname $1)
+  pandoc --from=docx --to=json --output=$dir/$base.json $1
+}
+
+org2docx_json() {
+  local base=$(basename $1 .org)
+  local dir=$(dirname $1)
+  org2docx $1
+  docx2json $dir/$base.docx
+}
+
+split_tables() {
+  local dir=$1
+  local file=$dir/sesshin-tables.org
+  emacs --batch \
+        --load=~/.emacs.d/init.el \
+        --visit=$file \
+        --eval='
+(cl-loop for table in (list "roster" "jobs" "rooms" "showers"   
+                            "shower-times")
+         do
+         (goto-char (point-min))
+         (re-search-forward
+          (format "#\\+name:\\s-*%s$" table))
+         (forward-line)
+         (org-table-export (format "%s.org" table) "orgtbl-to-orgtbl")
+         (org-table-export (format "%s.tsv" table) "orgtbl-to-tsv"))'
+}
+
+main() {
+  local dir=$1
+  split_tables $dir 2>/dev/null
+  for ofile in $dir/*.org; do
+    echo converting $ofile
+    org2docx_json $ofile
+  done
+}
+
+main $1

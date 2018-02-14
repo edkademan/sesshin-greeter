@@ -1,0 +1,57 @@
+|-------------------------+-------------------+-------------------------------------------------------------------+--------+-------------+-----------+------------------------------------+-----+------|
+| name                    | origin            | jobs                                                              | room   | bath        | bath time | full/part                          | fee | dues |
+|-------------------------+-------------------+-------------------------------------------------------------------+--------+-------------+-----------+------------------------------------+-----+------|
+| Adler, Max              | Rochester, NY     |                                                                   | SEB 4  | Shower SEB3 | 5:40 pm   | 6 days                             |   0 |    0 |
+| Basham, Bryan           | Rochester, NY     | kt-tt                                                             | SFB 4  | Men Soak    | 12:50 pm  | full                               |   0 |    0 |
+| Bennett, Sharon         | Jacksonville, FL  | hk-trash                                                          | SE 9   | Women Soak  | 5:40 pm   | 4/7                                |   0 |    0 |
+| Bistrong, Jake          | Rochester, NY     | hk-bath1                                                          | SE 8   | Bath SE4    | 12:50 pm  | full                               |   0 |    0 |
+| Carino, Joe             | Rochester, NY     | kt-cass, zn-hbook                                                 | SE 7   | Men Soak    | 9:40 pm   | full                               |   0 |    0 |
+| Caroselli, Brendon      | Rochester, NY     | kt-break, zn-hbook2                                               | E 2    | Shower NEB1 | 5:40 pm   | full                               |   0 |    0 |
+| Carpenter, Keith        | Rochester, NY     | hk-super, zn-block, zn-hmokg, zn-tblock, zn-zmokg                 | W 5    | Men Soak    | 1:11 pm   | full                               |   0 |    0 |
+| Defries, Andrew         | Staten Island, NY | kt-amc1                                                           | E 2    | Men Soak    | 6:00 pm   | full                               |   0 |    0 |
+| El-Mallakh, Jamie       | Rochester, NY     | kt-salad, zn-hbook3                                               | SE 8   | Men Soak    | 12:50 pm  | full                               |   0 |    0 |
+| Goodman, Gordon         | Honeoye Falls, NY | hk-mop                                                            | SE 6   | Men Soak    | 8:30 am   | full                               |   0 |    0 |
+| Granger, Dené           | Rochester, NY     | kt-lunch, zn-calis                                                | SE 9   | Women Soak  | 6:00 pm   | full                               |   0 |    0 |
+| Greulich, Peter         | Wakefield, MA     | hk-zen2, mt-wt2, zn-atea                                          | NE 5   | Men Soak    | 10:00 pm  | full                               |   0 |    0 |
+| Hakkila, Angela         | Rochester, NY     | kt-aml1, zn-cand, zn-hcand, zn-tcand, zn-acand, zn-zcand          | SEB 1  | Women Soak  | 5:40 pm   | full                               |   0 |    0 |
+| Hellstern, Gisela       | Berlin, GERMANY   | hk-flower                                                         | BNE 3  | Women Soak  | 12:50 pm  | full                               |   0 |    0 |
+| Howden, Martha          | Rochester, NY     | hk-vacum                                                          | BNE 5  | Shower NEB2 | 5:40 pm   | full                               |   0 |    0 |
+| Hubish, Rebecca         | Rochester, NY     | hk-bath3                                                          | W 6    | Women Soak  | 10:20 pm  | 4 days                             |   0 |    0 |
+| Jennings, Scott         | Rochester, NY     | kt-head, zn-ump, zn-abell                                         | W 2    | Men Soak    | 6:20 pm   | full                               |   0 |    0 |
+| Juha, Cathy             | Guelph, ONTARIO   | hk-laund                                                          | SEB 2  | Shower NEB3 | 9:40 pm   | full                               |   0 |    0 |
+| Kademan, Ed             | Stafford, NY      | ou-snow, mt-wt3, zn-wdrum, zn-greet, zn-hdrum, zn-adrum, zn-zdrum | BNE 8  | Shower NEB3 | 9:40 pm   | full                               |   0 |    0 |
+| Kernan, David           | Amherst, NY       |                                                                   | BNE 7  | Shower NEB2 | 9:40 pm   | full                               |   0 |    0 |
+| King, Charles           | Toronto, ONTARIO  | kt-pml1, zn-tlect                                                 | BNE 2  | Men Soak    | 10:00 pm  | full                               |   0 |    0 |
+| Kjolhede, Bodhin-roshi  | Rochester, NY     | zn-echan                                                          | NE 4   |             |           | full                               |   0 |    0 |
+| Kowal, Donna            | Rochester, NY     | kt-dinner, zn-hbook1, zn-atea                                     | E 3    | Women Soak  | 9:40 pm   | full                               |   0 |    0 |
+| Kowal, Tom              | Rochester, NY     | zn-time, zn-atea                                                  | E 1    | Men Soak    | 5:40 pm   | full                               |   0 |    0 |
+| Kubicka, Eryl           | Stafford, NY      | zn-atea                                                           | SE 5   |             |           | full                               |   0 |    0 |
+| Kubicka, Wayman         | Stafford, NY      | hk-soak, mt-run, zn-zmusic                                        | SE 3   |             |           | full                               |   0 |    0 |
+| Kutyifa, Valentina      | Victor, NY        | hk-proj2                                                          | BNE 10 | Women Soak  | 9:40 pm   | all except Tue-Fri, blocks 2 and 3 |   0 |    0 |
+| Leiserson, Alan         | Nashville, TN     | kt-aml2                                                           | SE 7   | Men Soak    | 6:00 pm   | full                               |   0 |    0 |
+| Leiserson, Anna Belle   | Nashville, TN     | kt-salad                                                          | SE 4   | Bath SE4    | 9:40 pm   | full                               |   0 |    0 |
+| Lindauer, Greg          | Louisville, TN    | kt-salad                                                          | SEB 3  | Shower SEB3 | 12:50 pm  | full                               |   0 |    0 |
+| Machmer, Elizabeth      | Rocherter, NY     | kt-soup                                                           | SEB 1  | Women Soak  | 6:20 pm   | full                               |   0 |    0 |
+| Marenco, Al             | Stafford, NY      | ou-snow                                                           | BNE 9  | Shower NEB3 | 5:40 pm   | full                               |   0 |    0 |
+| McCormick, Paul         | Saint Paul, MN    | kt-pml2                                                           | SE 2   | Men Soak    | 8:30 am   | 5 days                             |   0 |    0 |
+| McSpadden, Larry        | Wabash, IN        | kt-amas                                                           |        | Men Soak    | 6:20 pm   | full                               |   0 |    0 |
+| Miller, Bill            | Rochester, NY     | kt-pmc                                                            | SEB 4  | Shower SEB3 | 9:40 pm   | full                               |   0 |    0 |
+| Mitchell, Ron           | Rochester, NY     | hk-foooyer                                                        | W 1    | Bath NW2    | 12:50 pm  | full                               |   0 |    0 |
+| Nichols, Gail           | Saint Peters, MO  | hk-vacum                                                          | BNE 6  | Shower NEB2 | 12:50 pm  | full                               |   0 |    0 |
+| Oh, Miyeon              | Pittsford, NY     | kt-amdd                                                           | BNE 10 | Shower NEB2 | 12:50 pm  | full                               |   0 |    0 |
+| Ort, Daniel             | Kenmore, NY       | kt-amdw                                                           | SEB 3  | Men Soak    | 5:40 pm   | full                               |   0 |    0 |
+| Prince-Cherry, Jeanette | Louisville, TN    | kt-pmdd, zn-greet, zn-ttan, zn-atan, zn-atea, zn-ztan             | W 7    | Bath NW2    | 9:40 pm   | full                               |   0 |    0 |
+| Pulleyn, John           | Pittsford, NY     | zn-mon, zn-eblock, zn-zkyo, zn-zblock                             | SE 1A  |             |           | full                               |   0 |    0 |
+| Redding, Scott          | East Aurora, NY   | kt-pmdw                                                           | SEB 3  | Men Soak    | 1:10 pm   | full                               |   0 |    0 |
+| Robicsek, Susan         | Westford, VT      | kt-salad                                                          | SE 4   | Women Soak  | 6:00 pm   | full                               |   0 |    0 |
+| Schank, Paula           | Rochester, NY     | kt-apple                                                          | BNE 4  | Women Soak  | 10:00 pm  | full                               |   0 |    0 |
+| Shaffer, Marty          | Mequon, WI        | hk-bath2                                                          | SE 8   | Shower SEB1 | 5:40 pm   | full                               |   0 |    0 |
+| Stern, Andy             | Pittsford, NY     | kt-pmwtr                                                          | NE 2   | Shower FEB3 | 12:50 pm  | full                               |   0 |    0 |
+| Swanson, Grant          | Carmel, CA        | kt-amwtr, zn-atea                                                 |        | Men Soak    | 10:20 pm  | full                               |   0 |    0 |
+| Swanson, Phil           | Gloucester, MA    | hk-zen1, mt-wt1                                                   | NE 3   | Men Soak    | 10:20 pm  | full                               |   0 |    0 |
+| Targee, Gretchen        | Rochester, NY     | kt-veg                                                            | SEB 2  | Women Soak  | 10:00 pm  | full                               |   0 |    0 |
+| Taylor, Trueman         | Rochester, NY     | zn-mon, zn-hkeisu, zn-zkeisu, zn-zkyo, zn-zbell                   | SE 1B  |             |           | full                               |   0 |    0 |
+| Wilkinson, William      | Rochester, NY     | hk-proj1                                                          | BNE 1  | Shower NEB1 | 12:50 pm  | 2 days                             |   0 |    0 |
+| Wustner, Joey           | Rochester, N      | kt-baker, zn-ttan, zn-atan, zn-ztan                               | E 2    | Men Soak    | 9:40 pm   | full                               |   0 |    0 |
+|-------------------------+-------------------+-------------------------------------------------------------------+--------+-------------+-----------+------------------------------------+-----+------|
+|-------------------------+-------------------+-------------------------------------------------------------------+--------+-------------+-----------+------------------------------------+-----+------|

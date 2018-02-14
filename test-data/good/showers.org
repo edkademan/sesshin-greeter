@@ -1,0 +1,15 @@
+|-------------+----------|
+| room        | capacity |
+|-------------+----------|
+| Bath SE1    |        1 |
+| Bath SE4    |        1 |
+| Shower SEB1 |        1 |
+| Shower SEB2 |        1 |
+| Shower SEB3 |        1 |
+| Bath NW2    |        1 |
+| Shower NEB1 |        1 |
+| Shower NEB2 |        1 |
+| Shower NEB3 |        1 |
+| Women Soak  |        2 |
+| Men Soak    |        2 |
+|-------------+----------|
