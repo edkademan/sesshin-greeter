@@ -42,17 +42,19 @@
 
 ** Operation
    You must open a command prompt window with the Windows CMD
-   program. Once inside you issue the command
+   program. Once inside navigate to the "bin" directory in this
+   distribution using cd and do
 
-     sdocs.exe -i <input directory> -o <output directory>
+     sdocs -i <input directory> -o <output directory>
 
    where you replace <input directory> and <output directory> with the
    actual directory names. The output directory must exist already.
 
    A realistic-looking invocation with command prompt might look like
 
-     > sdocs.exe -i C:\Users\Ed\2018-01-sesshin -o C:\Users\Ed\pdfs
+     > sdocs -i C:\Users\Ed\2018-01-sesshin -o C:\Users\Ed\pdfs
 
-   This is assuming that either you have put the sdocs executable in
-   some place that your PATH environment describes or that you are
-   issuing the command from the directory that sdocs is in.
+   You don't have to make the bin directory current before you do this
+   but if you don't then you need to qualify sdocs with the directory
+   path so Windows can find it. For example, instead of "sdocs" you
+   might type "sesshin-greeter\etc\bin\sdocs".
