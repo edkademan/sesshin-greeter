@@ -62,4 +62,4 @@
   You don't have to make the bin directory current before you do this
   but if you don't then you need to qualify sdocs with the directory
   path so Windows can find it. For example, instead of "sdocs" you might
-  type "sesshin-greeter\etc\bin\sdocs".
+  type "sesshin-greeter\bin\sdocs".
