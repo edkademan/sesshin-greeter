@@ -174,13 +174,8 @@
 
 (define (table-for info) #f)
 
-(define (simplify-characters str)
-  (let* ((str (regexp-replace* #px"é" str "e"))
-         (str (regexp-replace* #px"—" str "---")))
-    str))
-
 (define (rget key roster-entry)
-  (simplify-characters (cdr (assoc key roster-entry))))
+  (cdr (assoc key roster-entry)))
 
 (define (los->str los) (apply string-append los))
 
