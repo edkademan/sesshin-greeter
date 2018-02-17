@@ -542,6 +542,13 @@
 (define (publish-roster [output-file-path
                          (build-path (output-dir) "roster.pdf")])
   (text->pdf (roster-table->text 55) output-file-path #:font-size 11))
+;;; * checklist
+
+;;; empty, name, dues, sess, mon meet, seat chg, kit, outdoor, hk,
+;;; zendo, tea cer, din rm, room & fan
+
+;;;
+;;; 
 ;;; * publish
 (define (publish-all)
   (publish-roster)
