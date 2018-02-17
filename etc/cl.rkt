@@ -2,15 +2,28 @@
 
 (require srfi/54 racket/draw)
 
-(define names
+(define names0
   '("Smmmith, Joe" "Snodgrass, Fabian" "Zuckerstein, Vladimir"
     "Cleopatra Pepperday" "Fred Flintstone"))
+
+(define names names0)
+(set! names (append names names0))
+(set! names (append names names0))
+(set! names (append names names0))
+(set! names (append names names0))
+(set! names (append names names0))
+(set! names (append names names0))
+(set! names (append names names0))
+(set! names (append names names0))
+(set! names (append names names0))
+(set! names (append names names0))
+(set! names (append names names0))
 
 (define cl-columns
   '("Dues" "Sess" "Mon Mtg" "Seat Chg" "Kit" "Out door" "HK" "Zend"
     "Tea Cer" "Din Rm" "Rm Fan" "Part Time"))
 
-(define (doit [font-size 12] [font-face "Courier"])
+(define (doit [font-size 10] [font-face "Courier"])
   (define font (make-font #:size font-size
                           #:size-in-pixels? #t
                           #:face font-face))
