@@ -3,9 +3,10 @@
 (require srfi/54 racket/draw)
 
 (define names
-  '("Smith, Joe" "Snodgrass, Fabian" "Zuckerstein, Vladimir"))
+  '("Smith, Joe" "Snodgrass, Fabian" "Zuckerstein, Vladimir"
+    "Cleopatra Pepperday" "Fred Flintstone"))
 
-(define (doit [font-size 16] [font-face "Courier"])
+(define (doit [font-size 12] [font-face "Courier"])
   (define font (make-font #:size font-size
                           #:size-in-pixels? #t
                           #:face font-face))
@@ -23,24 +24,31 @@
          [as-eps #f]))
   (define x0       0)
   (define x-name  20)
-  (define x-end  580)
-  (define (gray-line x y w h)
-    (let ((b (send dc get-brush))
-          (p (send dc get-pen)))
-      (send dc set-brush gray-brush)
+  (define x-end  610)
+  (define (line-height)
+    (let-values ([(w h d a) (send dc get-text-extent "Aby")])
+      h))
+  ;; The line number is n. Odd lines are gray.
+  (define (print-entry n name y)
+    (let* ((old-pen   (send dc get-pen))
+           (old-brush (send dc get-brush)))
       (send dc set-pen   clear-pen)
-      (send dc draw-rectangle x y w h)
-      (send dc set-brush b)
-      (send dc set-pen p)))
-  (define (name-entry name y)           ;top left
-    (define-values (w h d a) (send dc get-text-extent name))    
-    (gray-line x0 y (- x-end x0) h)
-    (send dc draw-text name x-name y))
+      (send dc set-brush (if (= (modulo n 2) 1)
+                             gray-brush
+                             clear-brush))
+      (send dc draw-rectangle x0 y (- x-end x0) (line-height))
+      (send dc set-pen   old-pen)
+      (send dc set-brush old-brush)
+      (send dc draw-text name x-name y)))
+  (define (print-entries n lon)
+    (when (not (null? lon))
+      (print-entry n (car lon) (+ 30 (* n (line-height))))
+      (print-entries (+ n 1) (cdr lon))))
   (send* dc
     (start-doc "useless string")
     (set-font font)
     (start-page))
-  (name-entry "Foobary" 50)
+  (print-entries 0 names)
   (send* dc
     (end-page)
     (end-doc)))
