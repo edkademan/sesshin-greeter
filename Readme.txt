@@ -50,16 +50,28 @@
   program. Once inside navigate to the "bin" directory in this
   distribution using cd and do
 
-  sdocs -i <input directory> -o <output directory>
+  ┌────
+  │ sdocs -i <input directory> -o <output directory>
+  └────
 
   where you replace <input directory> and <output directory> with the
   actual directory names. The output directory must exist already.
 
   A realistic-looking invocation with command prompt might look like
 
-  > sdocs -i C:\Users\Ed\2018-01-sesshin -o C:\Users\Ed\pdfs
+  ┌────
+  │ > sdocs -i C:\Users\Ed\2018-01-sesshin -o C:\Users\Ed\pdfs
+  └────
 
   You don't have to make the bin directory current before you do this
   but if you don't then you need to qualify sdocs with the directory
   path so Windows can find it. For example, instead of "sdocs" you might
   type "sesshin-greeter\bin\sdocs".
+
+  sdocs puts a title on each of the pages it generates. So in addition
+  to specifying input and output directories on the command line you can
+  also specify a title if you don't like the default one it chooses.
+
+  ┌────
+  │ > sdocs -i <...> -o <...> -t "April 2018 7-day Sesshin"
+  └────
