@@ -272,7 +272,7 @@
 ;;; * zendo duties
 (define (process-zendo-duties in)
   (define (deleteable-line? l)
-    (or (regexp-match? #px"^\uFEFF*[Zz]endo\\s*[Dd]utie" l)
+    (or (regexp-match? #px"^[\\s\uFEFF]*[Zz]endo\\s*[Dd]utie" l)
         (regexp-match? #px"^\\s*$" l)))
   (define (prefix-line? l) (not (regexp-match? #px"\t" l)))
   (define (booklet-line? l)
@@ -309,7 +309,11 @@
      ((prefix-line? l)
       (loop (read-line in 'any) r (unpad l) previous-job))
      (else
-      (let* ((mj (multi-job-line? l))
+      (let* ((prefix
+              (if (and (not (booklet-line? l))
+                       (regexp-match? #px"[Cc]hant.*ooklet" prefix))
+                  "" prefix))
+             (mj (multi-job-line? l))
              (l (if mj (list-ref mj 1) l))
              (current-job (extract-job l previous-job))
              (current-name (extract-name l))
