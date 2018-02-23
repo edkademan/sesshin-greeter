@@ -451,9 +451,8 @@
 
 ;;; * publish
 (define (work r)
-  (let* ((w (append (s-jobs r) (s-duties r)))
-         (w (if w w '(""))))
-    w))
+  (let* ((w (append (s-jobs r) (s-duties r))))
+    (if (null? w) '("") w)))
 
 (define (create-org-table s filename)
 
