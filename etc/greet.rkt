@@ -297,34 +297,35 @@
                     (unpad (list-ref m 1))))
                   m)))
       m))
-
+  (define (update-prefix prefix line)
+    (if (and (not (booklet-line? line))
+             (regexp-match? #px"[Cc]hant.*ooklet" prefix))
+        "" prefix))
+  (define (job-title prefix job)
+    (if (string=? prefix "") job (format "~a ~a" prefix job)))
   (let loop ((l (read-line in 'any))
              (r (list))
-             (prefix "")
+             (pre "")
              (previous-job ""))
     (cond
      ((eof-object? l) (collect-jobs r))
      ((deleteable-line? l)
-      (loop (read-line in 'any) r prefix previous-job))
+      (loop (read-line in 'any) r pre previous-job))
      ((prefix-line? l)
       (loop (read-line in 'any) r (unpad l) previous-job))
      (else
-      (let* ((prefix
-              (if (and (not (booklet-line? l))
-                       (regexp-match? #px"[Cc]hant.*ooklet" prefix))
-                  "" prefix))
+      (let* ((pre (update-prefix pre l))
              (mj (multi-job-line? l))
              (l (if mj (list-ref mj 1) l))
              (current-job (extract-job l previous-job))
-             (current-name (extract-name l))
-             (job-title (if (string=? prefix "")
-                            current-job
-                            (format "~a ~a" prefix current-job))))
+             (current-name (extract-name l)))
         (loop (if mj (list-ref mj 2) (read-line in 'any))
               (if (not current-name)
                   r
-                  (cons (cons current-name job-title) r))
-              prefix
+                  (cons (cons current-name
+                              (job-title pre current-job))
+                        r))
+              pre
               current-job))))))
 
 ;;; * showers
