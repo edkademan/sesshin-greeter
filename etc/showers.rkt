@@ -58,11 +58,6 @@
     ("Vladimir von Zuckerstein" job2)
     ("Fabian Snodgrass"         job3)))
 
-;;; List each of whose elements is a list of
-;;;   (name shower shower-time).
-(define shower-assignments
-  '(("name" "shower" ())))
-
 ;;; * showers
 ;;; Assign showers and shower times to the individuals that do not
 ;;; interfere with their jobs.
@@ -104,7 +99,13 @@
             (find-shower shower-time showers)))))
 
 (define (create-shower-assignments)
-  #t
-  )
+  (let loop ((names (map car roster))
+             (showers showers)
+             (times shower-times)
+             (assign '()))  ;(e ...), e is (name shower time)
+    (if (null? names)
+        assign
+        (let ((st (shower-time-for (car names) times)))
+          ))))
 
 ;;; (remove v lst) works for shower times
