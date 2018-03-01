@@ -66,56 +66,49 @@
 
 ;;; * showers
 ;;;
-;;; An assig is a location-time combination. For example
-;;;   ("Shower SEB 1" . ("8:30am" . "8:50am"))
-;;; and assigs are a list of such pairs:
+;;; An assig is a name-location-time combination. For example
+;;;   ("Fred Flintstone" . "Shower SEB 1" . ("8:30am" . "8:50am"))
+;;; and all-loc&time are a list of pairs of location and time:
 ;;;   '(("Shower SEB 1" . (" 8:30am" . "8:50am"))
 ;;;     ("Shower SEB 1" . (" 8:50am" . "9:10am"))
 ;;;     ("Shower SEB 1" . ("12:50pm" . "1:10pm")))
 
-(define all-assigs
+(define all-loc&time
   (apply append
          (map (lambda (s) (map (lambda (t) (cons (car s) t))
                           shower-times))
               showers)))
 
-;;; update assigs for individual w/all-assigs
-;;; if all-assigs is empty error
-;;; for each assig in all-assigs
-;;;   if appropriate for individual (jobtimes & capacity)
-;;;     update assigs with assig
-;;;     return assigs
-;;; ;nothing appropriate
-;;; remove previous assig from assigs and remove temporarily from
-;;; all-assigs
-;;; now update assigs for previous individual w/temp all-assigs
-;;; restore all-assigs to original state and redo
-;;;
-;;;
-;;;
-;;; start out with assigs empty
-;;; for each individual
-;;; 
+(define *stack* '())
 
+(define (push k) (set! *stack* (cons k *stack*)))
 
-
-
-
-(define past '())
+(define (pop)
+  (if (null? *stack*)
+      'stack-empty
+      (let ((k (car *stack*)))
+        (set! *stack* (cdr *stack*))
+        k)))
 
 (define (note x)
   (call-with-composable-continuation
    (lambda (k)
-     (set! past (cons k past))
+     (push k)
      x)))
 
+(define (eos? k) (eq? k 'stack-empty))
 
-
-
-
-
-
-
+(define (update-assigs name assigs)
+  (let loop ((l&t all-loc&time))
+    (cond
+     ((null? l&t)
+      (let ((k (pop)))
+        (if (eos? k)
+            (error 'impossible)
+            (k #f))))
+     ((note (works-for? name (car l&t)))
+      (cons (cons name (car l&t)) assigs))
+     (else (loop (cdr l&t))))))
 
 (define (job-for name) (cadr (assoc name roster)))
 (define (job-times-for job [jtimes jobs])
