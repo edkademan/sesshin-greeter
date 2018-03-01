@@ -44,20 +44,14 @@
     (job3 (( "9:30pm" . "10:30pm")))))
 
 (define showers
-  '(("Shower SEB 1" . 1)
-    ("Shower SEB 2" . 1)
-    ("Shower SEB 3" . 1)))
+  '(("Shower SEB 1" 1)
+    ("Shower SEB 2" 1)
+    ("Shower SEB 3" 1)))
 
 (define shower-times
   '(( "8:30am" . "8:50am")
     ( "8:50am" . "9:10am")
     ("12:50pm" . "1:10pm")))
-
-;; (define showers
-;;   '(("Shower SEB 1" . 1)))
-
-;; (define shower-times
-;;   '(("12:50pm" . "1:10pm")))
 
 (define roster
   '(("Fred Flintstone"          job1)
@@ -67,15 +61,16 @@
 ;;; * showers
 ;;;
 ;;; An assig is a name-location-time combination. For example
-;;;   ("Fred Flintstone" . "Shower SEB 1" . ("8:30am" . "8:50am"))
-;;; and all-loc&time are a list of pairs of location and time:
-;;;   '(("Shower SEB 1" . (" 8:30am" . "8:50am"))
-;;;     ("Shower SEB 1" . (" 8:50am" . "9:10am"))
-;;;     ("Shower SEB 1" . ("12:50pm" . "1:10pm")))
+;;;   ("Fred Flintstone" "Shower SEB 1" ("8:30am" . "8:50am"))
+;;; and all-loc&time is a list each of whose elements is a list of
+;;; location and time
+;;;   '(("Shower SEB 1" (" 8:30am" . "8:50am"))
+;;;     ("Shower SEB 1" (" 8:50am" . "9:10am"))
+;;;     ("Shower SEB 1" ("12:50pm" . "1:10pm")))
 
 (define all-loc&time
   (apply append
-         (map (lambda (s) (map (lambda (t) (cons (car s) t))
+         (map (lambda (s) (map (lambda (t) (list (car s) t))
                           shower-times))
               showers)))
 
@@ -92,23 +87,14 @@
 
 (define (note x)
   (call-with-composable-continuation
-   (lambda (k)
-     (push k)
-     x)))
+   (lambda (k) (push k) x)))
 
 (define (eos? k) (eq? k 'stack-empty))
-
-(define (update-assigs name assigs)
-  (let loop ((l&t all-loc&time))
-    (cond
-     ((null? l&t)
-      (let ((k (pop)))
-        (if (eos? k)
-            (error 'impossible)
-            (k #f))))
-     ((note (works-for? name (car l&t)))
-      (cons (cons name (car l&t)) assigs))
-     (else (loop (cdr l&t))))))
+(define (backup)
+  (let ((k (pop)))
+    (if (eos? k)
+        (error 'impossible)
+        (k #f))))
 
 (define (job-for name) (cadr (assoc name roster)))
 (define (job-times-for job [jtimes jobs])
@@ -116,3 +102,38 @@
    ((null? jtimes) #f)
    ((eq? job (caar jtimes)) (cadar jtimes))
    (else (job-times-for job (cdr jtimes)))))
+
+;;; need to consider capacity
+(define (update-assigs name assigs)
+  (define (used-already? loc&time)
+    (not (null? (filter (lambda (a) (equal? loc&time (cdr a))) assigs))))
+  (define (works? loc&time)
+    (not (or (time-collision? (cdr loc&time)
+                              (job-times-for (job-for name)))
+             (used-already? loc&time))))
+  (let loop ((l&t all-loc&time))
+    (cond
+     ((null? l&t) (backup))
+     ((note (works? (car l&t)))
+      (cons (cons name (car l&t)) assigs))
+     (else (loop (cdr l&t))))))
+
+;;; for debugging
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define assigs '(("joe smith" "Shower SEB 1" (" 8:30am" . "8:50am"))
+                 ("bob mcbob" "Shower SEB 1" (" 8:50am" . "9:10am"))
+                 ("foo bar" "Shower SEB 1" ("12:50pm" . "1:10pm"))))
+
+(define (used-already? loc&time)
+  (not (null? (filter (lambda (a) (equal? loc&time (cdr a))) assigs))))
+
+(define lt '("Shower SEB 1" ("12:50pm" . "1:10pm")))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define (create-assignments [names (map car roster)] [assigs '()])
+  (if (null? names)
+      assigs
+      (create-assignments (cdr names)
+                          (update-assigs (car names) assigs))))
