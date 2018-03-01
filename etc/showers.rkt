@@ -43,15 +43,21 @@
            ( "5:30pm" .  "6:30pm")))
     (job3 (( "9:30pm" . "10:30pm")))))
 
+;; (define showers
+;;   '(("Shower SEB 1" . 1)
+;;     ("Shower SEB 2" . 1)
+;;     ("Shower SEB 3" . 1)))
+
+;; (define shower-times
+;;   '(( "8:30am" . "8:50am")
+;;     ( "8:50am" . "9:10am")
+;;     ("12:50pm" . "1:10pm")))
+
 (define showers
-  '(("Shower SEB 1" . 1)
-    ("Shower SEB 2" . 1)
-    ("Shower SEB 3" . 1)))
+  '(("Shower SEB 1" . 1)))
 
 (define shower-times
-  '(( "8:30am" . "8:50am")
-    ( "8:50am" . "9:10am")
-    ("12:50pm" . "1:10pm")))
+  '(("12:50pm" . "1:10pm")))
 
 (define roster
   '(("Fred Flintstone"          job1)
@@ -65,21 +71,21 @@
 (define (job-for name) (cadr (assoc name roster)))
 (define (job-times-for job [jtimes jobs])
   (cond
-   ((null? jtimes) 'unknown-job)
+   ((null? jtimes) #f)
    ((eq? job (caar jtimes)) (cadar jtimes))
    (else (job-times-for job (cdr jtimes)))))
 
 ;;; Find a shower time for name from among shower-times.
 (define (shower-time-for name shower-times)
   (cond
-   ((null? shower-times) 'no-shower-time)
+   ((null? shower-times) #f)
    ((time-collision? (car shower-times)
                      (job-times-for (job-for name)))
     (shower-time-for name (cdr shower-times)))
    (else (car shower-times))))
 
 ;;; Return the number of people using the shower at the shower time.
-(define (n-shower-users shower shower-time)
+(define (n-shower-users shower shower-time shower-assignments)
   (define (match? shower-assignment)
     (and (string=? shower (cadr shower-assignment))
          (equal? shower-time (caddr shower-assignment))))
@@ -88,15 +94,53 @@
 (define (shower-capacity shower) (cdr (assoc shower showers)))
 
 ;;; Allocate a shower at time shower-time from among showers.
-(define (find-shower shower-time showers)
+(define (find-shower shower-time showers shower-assignments)
   (if (null? showers)
-      'no-shower
+      #f
       (let ((shower  (caar showers))
             (showers (cdr showers)))
-        (if (< (n-shower-users shower shower-time)
+        (if (< (n-shower-users shower shower-time shower-assignments)
                (shower-capacity shower))
             shower
-            (find-shower shower-time showers)))))
+            (find-shower shower-time showers shower-assignments)))))
+
+;;; for an individual
+;;; for each possible shower time
+;;;   for each shower
+;;;     if time/shower is available save to assign
+;;; if no time/shower available
+;;;   remove the shower used by the previous individual and redo the
+;;;   assignment for that individual
+;;;
+
+;;; (REDO) means find the shower for the previous assignment and
+;;; remove it from showers, and remove the previous assignment from
+;;; assign and do over for the previous individual. Then, when you get
+;;; another set of assignments, restore the shower and do over for the
+;;; current individual.
+
+(define (reassign-previous-shower/time showers times assign)
+  (match-let ([(list name shower time) (car assign)])
+    (let* ((shs (remove shower showers))
+           (assign (assign-a-shower/time
+                    name shs times (cdr assign))))
+      assign)))
+
+(define (assign-a-shower/time name showers times assign)
+  (and (null? showers) (null? times) (error 'impossible))
+  (let ((st (shower-time-for name times)))
+    (cond
+     ((not st)
+      (assign-a-shower/time
+       name showers times
+       (reassign-previous-shower/time showers times assign)))
+     (else
+      (let ((sh (find-shower st showers assign)))
+        (if (not sh)
+            (assign-a-shower/time
+             name showers times
+             (reassign-previous-shower/time showers times assign))
+            (cons (list name sh st) assign)))))))
 
 (define (create-shower-assignments)
   (let loop ((names (map car roster))
@@ -105,7 +149,11 @@
              (assign '()))  ;(e ...), e is (name shower time)
     (if (null? names)
         assign
-        (let ((st (shower-time-for (car names) times)))
-          ))))
-
-;;; (remove v lst) works for shower times
+        (loop (cdr names)
+              showers times
+              (call-with-composable-continuation
+               (lambda (k)
+                 
+                 ))
+              (assign-a-shower/time
+               (car names) showers times assign)))))
