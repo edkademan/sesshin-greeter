@@ -83,9 +83,7 @@
         (set! *stack* (cdr *stack*))
         k)))
 
-(define (note x)
-  (call-with-composable-continuation
-   (lambda (k) (when x (push k)) x)))
+(define (note x) (call/cc (lambda (k) (when x (push k)) x)))
 
 (define (eos? k) (eq? k 'stack-empty))
 (define (backup)
@@ -120,8 +118,6 @@
      (else (loop (cdr l&t))))))
 
 (define (create-assignments [names (map car roster)] [assigs '()])
-  (display (format "~%names: ~a~%length: ~a~%assigs: ~a~%" names
-                   (length names) assigs))
   (if (null? names)
       assigs
       (create-assignments (cdr names)
