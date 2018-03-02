@@ -38,19 +38,17 @@
 ;;; * data
 
 (define jobs
-  '((job1 (( "8:30am" .  "9:30am")))
+  '((job1 (( "9:30pm" . "10:30pm")))
     (job2 (("12:30pm" .  "1:30pm")
            ( "5:30pm" .  "6:30pm")))
-    (job3 (( "9:30pm" . "10:30pm")))))
+    (job3 (("12:30pm" .  "1:30pm")))))
 
 (define showers
   '(("Shower SEB 1" 1)
-    ("Shower SEB 2" 1)
-    ("Shower SEB 3" 1)))
+    ("Shower SEB 2" 1)))
 
 (define shower-times
   '(( "8:30am" . "8:50am")
-    ( "8:50am" . "9:10am")
     ("12:50pm" . "1:10pm")))
 
 (define roster
@@ -87,7 +85,7 @@
 
 (define (note x)
   (call-with-composable-continuation
-   (lambda (k) (push k) x)))
+   (lambda (k) (when x (push k)) x)))
 
 (define (eos? k) (eq? k 'stack-empty))
 (define (backup)
@@ -103,12 +101,15 @@
    ((eq? job (caar jtimes)) (cadar jtimes))
    (else (job-times-for job (cdr jtimes)))))
 
-;;; need to consider capacity
 (define (update-assigs name assigs)
   (define (used-already? loc&time)
-    (not (null? (filter (lambda (a) (equal? loc&time (cdr a))) assigs))))
+    (let ((n (length
+              (filter (lambda (a) (equal? loc&time (cdr a)))
+                      assigs)))
+          (c (cadr (assoc (car loc&time) showers))))
+      (>= n c)))
   (define (works? loc&time)
-    (not (or (time-collision? (cdr loc&time)
+    (not (or (time-collision? (cadr loc&time)
                               (job-times-for (job-for name)))
              (used-already? loc&time))))
   (let loop ((l&t all-loc&time))
@@ -118,21 +119,9 @@
       (cons (cons name (car l&t)) assigs))
      (else (loop (cdr l&t))))))
 
-;;; for debugging
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define assigs '(("joe smith" "Shower SEB 1" (" 8:30am" . "8:50am"))
-                 ("bob mcbob" "Shower SEB 1" (" 8:50am" . "9:10am"))
-                 ("foo bar" "Shower SEB 1" ("12:50pm" . "1:10pm"))))
-
-(define (used-already? loc&time)
-  (not (null? (filter (lambda (a) (equal? loc&time (cdr a))) assigs))))
-
-(define lt '("Shower SEB 1" ("12:50pm" . "1:10pm")))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (define (create-assignments [names (map car roster)] [assigs '()])
+  (display (format "~%names: ~a~%length: ~a~%assigs: ~a~%" names
+                   (length names) assigs))
   (if (null? names)
       assigs
       (create-assignments (cdr names)
