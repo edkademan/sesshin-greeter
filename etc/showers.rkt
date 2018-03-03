@@ -22,7 +22,7 @@
            (ampm (if (or (< min (* 12 60))
                          (= min (* 24 60)))
                      "am" "pm")))
-      (format "~a:~a ~a" h m ampm))))
+      (format "~a:~a ~a" h (cat m 2 #\0) ampm))))
 
 (define (interval-start time-interval) (car time-interval))
 (define (interval-end   time-interval) (cdr time-interval))
@@ -47,9 +47,6 @@
    (else (time-collision? interval (cdr list-of-intervals)))))
 
 ;;; * data
-
-;;; must generate shower intervals
-
 (define (table-for tab)
   (define job-times-tab
     '((("job" . "job1")
@@ -60,13 +57,12 @@
       (("job" . "job3")
        ("intervals" . (("12:30 pm" . "1:30 pm"))))
       (("job" . "job4")
-       ("intervals" . (("7:30 am" . "8:30 am"))))))
+       ("intervals" . (("8:30 am" . "9:30 am"))))))
   (define shower-times-tab
-    '((("time" .  "8:30 am"))
-      (("time" . "12:50 pm"))))
+    '(("time" .  "8:30 am")
+      ("time" . "12:50 pm")))
   (define showers-tab
     '((("room" . "Shower NEB1") ("capacity" . "1"))
-      (("room" . "Shower SEB1") ("capacity" . "1"))
       (("room" . "Shower SEB2") ("capacity" . "1"))))
   (define roster-tab
     '((("name" . "Fred Flintstone")
@@ -97,6 +93,7 @@
     [(roster)       roster-tab]
     [(shower-times) shower-times-tab]
     [(showers)      showers-tab]
+    [(job-times)    job-times-tab]
     [else 'not-found]))
 ;;; * showers
 ;;;
@@ -108,59 +105,87 @@
 ;;;     ("Shower SEB 1" (" 8:50am" . "9:10am"))
 ;;;     ("Shower SEB 1" ("12:50pm" . "1:10pm")))
 
-;; (define all-loc&time
-;;   (apply append
-;;          (map (lambda (s) (map (lambda (t) (list (car s) t))
-;;                           shower-times))
-;;               showers)))
+(define (rget key roster-entry)
+  (cdr (assoc key roster-entry)))
 
-;; (define *stack* '())
+(define (jobs-list roster-entry)
+  (regexp-split #px"[,\\s]+" (rget "jobs" roster-entry)))
 
-;; (define (push k) (set! *stack* (cons k *stack*)))
+(define shower-intervals
+  (map (lambda (s)
+         (cons (cdr s)
+               (min->hm (+ (hm->min (cdr s)) 20))))
+       (table-for 'shower-times)))
 
-;; (define (pop)
-;;   (if (null? *stack*)
-;;       'stack-empty
-;;       (let ((k (car *stack*)))
-;;         (set! *stack* (cdr *stack*))
-;;         k)))
+(define all-loc&time
+  (let ((showers (map (lambda (s) (rget "room" s))
+                      (table-for 'showers)))
+        (add-intervals (lambda (shower)
+                         (map (lambda (interval)
+                                (list shower interval))
+                              shower-intervals))))
+    (apply append (map add-intervals showers))))
 
-;; (define (note x) (call/cc (lambda (k) (when x (push k)) x)))
+(define *stack* '())
 
-;; (define (eos? k) (eq? k 'stack-empty))
-;; (define (backup)
-;;   (let ((k (pop)))
-;;     (if (eos? k)
-;;         (error 'impossible)
-;;         (k #f))))
+(define (push k) (set! *stack* (cons k *stack*)))
 
-;; (define (job-for name) (cadr (assoc name roster)))
-;; (define (job-times-for job [jtimes jobs])
-;;   (cond
-;;    ((null? jtimes) #f)
-;;    ((eq? job (caar jtimes)) (cadar jtimes))
-;;    (else (job-times-for job (cdr jtimes)))))
+(define (pop)
+  (if (null? *stack*)
+      'stack-empty
+      (let ((k (car *stack*)))
+        (set! *stack* (cdr *stack*))
+        k)))
 
-;; (define (update-assigs name assigs)
-;;   (define (used-already? loc&time)
-;;     (let ((n (length
-;;               (filter (lambda (a) (equal? loc&time (cdr a)))
-;;                       assigs)))
-;;           (c (cadr (assoc (car loc&time) showers))))
-;;       (>= n c)))
-;;   (define (works? loc&time)
-;;     (not (or (time-collision? (cadr loc&time)
-;;                               (job-times-for (job-for name)))
-;;              (used-already? loc&time))))
-;;   (let loop ((l&t all-loc&time))
-;;     (cond
-;;      ((null? l&t) (backup))
-;;      ((note (works? (car l&t)))
-;;       (cons (cons name (car l&t)) assigs))
-;;      (else (loop (cdr l&t))))))
+(define (note x) (call/cc (lambda (k) (when x (push k)) x)))
 
-;; (define (create-assignments [names (map car roster)] [assigs '()])
-;;   (if (null? names)
-;;       assigs
-;;       (create-assignments (cdr names)
-;;                           (update-assigs (car names) assigs))))
+(define (eos? k) (eq? k 'stack-empty))
+(define (backup)
+  (let ((k (pop)))
+    (if (eos? k)
+        (error 'impossible)
+        (k #f))))
+
+(define (jobs-for name [r (table-for 'roster)])
+  (cond
+   ((null? r) #f)
+   ((string=? (rget "name" (car r)) name)
+    (jobs-list (car r)))
+   (else (jobs-for name (cdr r)))))
+
+(define (job-times-for jobs)
+  (define (job-times-for-a job)
+    (rget "intervals"
+          (car (filter (lambda (jt) (string=? (rget "job" jt) job))
+                       (table-for 'job-times)))))
+  (apply append (map job-times-for-a jobs)))
+
+(define (capacity-for shower)
+  (string->number
+   (cdadr
+    (assoc (cons "room" shower) (table-for 'showers)))))
+
+(define (update-assigs name assigs)
+  (define (used-already? loc&time)
+    (let ((n (length
+              (filter (lambda (a) (equal? loc&time (cdr a)))
+                      assigs))))
+      (>= n (capacity-for (car loc&time)))))
+  (define (works? loc&time)
+    (not (or (time-collision? (cadr loc&time)
+                              (job-times-for (jobs-for name)))
+             (used-already? loc&time))))
+  (let loop ((l&t all-loc&time))
+    (cond
+     ((null? l&t) (backup))
+     ((note (works? (car l&t)))
+      (cons (cons name (car l&t)) assigs))
+     (else (loop (cdr l&t))))))
+
+(define (create-assignments [names (map (lambda (e) (rget "name" e))
+                                        (table-for 'roster))]
+                            [assigs '()])
+  (if (null? names)
+      assigs
+      (create-assignments (cdr names)
+                          (update-assigs (car names) assigs))))
