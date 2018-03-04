@@ -68,7 +68,7 @@
     '((("name" . "Fred Flintstone")
        ("jobs" . "job1")
        ("room" . "SEB 4")
-       ("bath" . "")
+       ("bath" . "Shower SEB2")
        ("bath time" . "")
        ("gender" . "m"))
       (("name" . "Vladimir von Zuckerstein")
@@ -80,8 +80,8 @@
       (("name" . "Fabian Snodgrass")
        ("jobs" . "job3")
        ("room" . "SEB 6")
-       ("bath" . "")
-       ("bath time" . "")
+       ("bath" . "Shower NEB1")
+       ("bath time" . "8:30 am")
        ("gender" . "m"))
       (("name" . "Cadwallader Colden")
        ("jobs" . "job4")
@@ -111,10 +111,15 @@
 (define (jobs-list roster-entry)
   (regexp-split #px"[,\\s]+" (rget "jobs" roster-entry)))
 
+(define (shower-start->shower-interval start)
+  (if (string=? start "")
+      'undefined
+      (cons start
+            (min->hm (+ (hm->min start) 20)))))
+
 (define shower-intervals
   (map (lambda (s)
-         (cons (cdr s)
-               (min->hm (+ (hm->min (cdr s)) 20))))
+         (shower-start->shower-interval (cdr s)))
        (table-for 'shower-times)))
 
 (define all-loc&time
@@ -164,6 +169,18 @@
   (string->number
    (cdadr
     (assoc (cons "room" shower) (table-for 'showers)))))
+
+;;; The preliminary table may indicate that an individual is to use a
+;;; certain bath, or even a certain bath/bath time combination.
+(define (initialize-assigs)
+  (let* ((r (table-for 'roster))
+         (r (filter (lambda (e) (not (string=? (rget "bath" e) ""))) r)))
+    (map (lambda (e)
+           (list (rget "name" e)
+                 (rget "bath" e)
+                 (shower-start->shower-interval
+                  (rget "bath time" e))))
+         r)))
 
 (define (update-assigs name assigs)
   (define (used-already? loc&time)
