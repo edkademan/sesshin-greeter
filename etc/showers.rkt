@@ -62,33 +62,40 @@
     '(("time" .  "8:30 am")
       ("time" . "12:50 pm")))
   (define showers-tab
-    '((("room" . "Shower NEB1") ("capacity" . "1"))
+    '((("room" . "Men Soak") ("capacity" . "2"))
+      (("room" . "Women Soak") ("capacity" . "2"))
       (("room" . "Shower SEB2") ("capacity" . "1"))))
   (define roster-tab
     '((("name" . "Fred Flintstone")
+       ("m/f" . "m")
        ("jobs" . "job1")
        ("room" . "SEB 4")
        ("bath" . "Shower SEB2")
-       ("bath time" . "")
-       ("gender" . "m"))
+       ("bath time" . ""))
       (("name" . "Vladimir von Zuckerstein")
+       ("m/f" . "m")
        ("jobs" . "job2")
        ("room" . "SEB 5")
        ("bath" . "")
-       ("bath time" . "")
-       ("gender" . "m"))
+       ("bath time" . ""))
+      (("name" . "Aphrodite Finknottle")
+       ("m/f" . "f")
+       ("jobs" . "job1")
+       ("room" . "SEB 7")
+       ("bath" . "")
+       ("bath time" . ""))
       (("name" . "Fabian Snodgrass")
+       ("m/f" . "m")
        ("jobs" . "job3")
        ("room" . "SEB 6")
-       ("bath" . "Shower NEB1")
-       ("bath time" . "8:30 am")
-       ("gender" . "m"))
+       ("bath" . "")
+       ("bath time" . "8:30 am"))
       (("name" . "Cadwallader Colden")
+       ("m/f" . "m")
        ("jobs" . "job4")
        ("room" . "BNE 1")
        ("bath" . "")
-       ("bath time" . "")
-       ("gender" . "m"))))
+       ("bath time" . ""))))
   (case tab
     [(roster)       roster-tab]
     [(shower-times) shower-times-tab]
@@ -145,7 +152,9 @@
 (define (note x) (call/cc (lambda (k) (when x (push k)) x)))
 
 (define (eos? k) (eq? k 'stack-empty))
+
 (define (backup)
+  (display (format "backing up~%"))     ;delete me
   (let ((k (pop)))
     (if (eos? k)
         (error 'impossible)
@@ -173,20 +182,21 @@
 ;;; The preliminary table may indicate that an individual is to use a
 ;;; certain bath, a certain bath time or both.
 (define (initialize-assigs)
-  (define (init-nlt roster-entry)
+  (define (init-nglt roster-entry)
     (let* ((n (rget "name" roster-entry))
+           (g (rget "m/f" roster-entry))
            (l (rget "bath" roster-entry))
            (l (if (string=? l "") 'undefined l))
            (t (shower-start->shower-interval
                (rget "bath time" roster-entry))))
-      (list n l t)))
-  (map init-nlt (table-for 'roster)))
+      (list n g l t)))
+  (map init-nglt (table-for 'roster)))
 
 ;;; Find a bath and bath time for individual w/possible partial
-;;; pre-assignment. (nlt is the preliminary name/location/time
+;;; pre-assignment. (nglt is the preliminary name/gender/location/time
 ;;; interval.)
-(define (update-assigs nlt assigs)
-  (match-let (((list name loc time) nlt))
+(define (update-assigs nglt assigs)
+  (match-let (((list name gender loc time) nglt))
     (define (used-already? loc&time)
       (let ((n (length
                 (filter (lambda (a) (equal? loc&time (cdr a)))
@@ -199,11 +209,20 @@
       (or (eq? loc 'undefined) (string=? loc (car loc&time))))
     (define (time-ok? loc&time)
       (or (eq? time 'undefined) (equal? time (cadr loc&time))))
+    (define (good-sex? loc&time)
+      (let* ((l (car loc&time))
+             (g (cond
+                 ((regexp-match? #px"Women" l) "f")
+                 ((regexp-match? #px"Men"   l) "m")
+                 (else 'undefined))))
+        (or (eq? g 'undefined)
+            (string=? g gender))))
     (define (works? loc&time)
       (and (not (used-already? loc&time))
            (not (time-conflict? loc&time))
            (loc-ok? loc&time)
-           (time-ok? loc&time)))
+           (time-ok? loc&time)
+           (good-sex? loc&time)))
     (let loop ((l&t all-loc&time))
       (cond
        ((null? l&t) (backup))
@@ -214,6 +233,7 @@
 (define (create-assignments)
   (let loop ((pre-assigs  (initialize-assigs))
              (post-assigs '()))
+    (display (format "~%pre: ~a~%post: ~a~%" pre-assigs post-assigs))
     (if (null? pre-assigs)
         post-assigs
         (loop (cdr pre-assigs)
