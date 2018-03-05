@@ -171,38 +171,50 @@
     (assoc (cons "room" shower) (table-for 'showers)))))
 
 ;;; The preliminary table may indicate that an individual is to use a
-;;; certain bath, or even a certain bath/bath time combination.
+;;; certain bath, a certain bath time or both.
 (define (initialize-assigs)
-  (let* ((r (table-for 'roster))
-         (r (filter (lambda (e) (not (string=? (rget "bath" e) ""))) r)))
-    (map (lambda (e)
-           (list (rget "name" e)
-                 (rget "bath" e)
-                 (shower-start->shower-interval
-                  (rget "bath time" e))))
-         r)))
+  (define (init-nlt roster-entry)
+    (let* ((n (rget "name" roster-entry))
+           (l (rget "bath" roster-entry))
+           (l (if (string=? l "") 'undefined l))
+           (t (shower-start->shower-interval
+               (rget "bath time" roster-entry))))
+      (list n l t)))
+  (map init-nlt (table-for 'roster)))
 
-(define (update-assigs name assigs)
-  (define (used-already? loc&time)
-    (let ((n (length
-              (filter (lambda (a) (equal? loc&time (cdr a)))
-                      assigs))))
-      (>= n (capacity-for (car loc&time)))))
-  (define (works? loc&time)
-    (not (or (time-collision? (cadr loc&time)
-                              (job-times-for (jobs-for name)))
-             (used-already? loc&time))))
-  (let loop ((l&t all-loc&time))
-    (cond
-     ((null? l&t) (backup))
-     ((note (works? (car l&t)))
-      (cons (cons name (car l&t)) assigs))
-     (else (loop (cdr l&t))))))
+;;; Find a bath and bath time for individual w/possible partial
+;;; pre-assignment. (nlt is the preliminary name/location/time
+;;; interval.)
+(define (update-assigs nlt assigs)
+  (match-let (((list name loc time) nlt))
+    (define (used-already? loc&time)
+      (let ((n (length
+                (filter (lambda (a) (equal? loc&time (cdr a)))
+                        assigs))))
+        (>= n (capacity-for (car loc&time)))))
+    (define (time-conflict? loc&time)
+      (time-collision? (cadr loc&time)
+                       (job-times-for (jobs-for name))))
+    (define (loc-ok? loc&time)
+      (or (eq? loc 'undefined) (string=? loc (car loc&time))))
+    (define (time-ok? loc&time)
+      (or (eq? time 'undefined) (equal? time (cadr loc&time))))
+    (define (works? loc&time)
+      (and (not (used-already? loc&time))
+           (not (time-conflict? loc&time))
+           (loc-ok? loc&time)
+           (time-ok? loc&time)))
+    (let loop ((l&t all-loc&time))
+      (cond
+       ((null? l&t) (backup))
+       ((note (works? (car l&t)))
+        (cons (cons name (car l&t)) assigs))
+       (else (loop (cdr l&t)))))))
 
-(define (create-assignments [names (map (lambda (e) (rget "name" e))
-                                        (table-for 'roster))]
-                            [assigs '()])
-  (if (null? names)
-      assigs
-      (create-assignments (cdr names)
-                          (update-assigs (car names) assigs))))
+(define (create-assignments)
+  (let loop ((pre-assigs  (initialize-assigs))
+             (post-assigs '()))
+    (if (null? pre-assigs)
+        post-assigs
+        (loop (cdr pre-assigs)
+              (update-assigs (car pre-assigs) post-assigs)))))
