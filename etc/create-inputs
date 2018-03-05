@@ -42,17 +42,17 @@ split_tables() {
          (re-search-forward
           (format "#\\+name:\\s-*%s$" table))
          (forward-line)
-         (org-table-export (format "%s.org" table) "orgtbl-to-orgtbl")
+         ;;(org-table-export (format "%s.org" table) "orgtbl-to-orgtbl")
          (org-table-export (format "%s.tsv" table) "orgtbl-to-tsv"))'
 }
 
 main() {
   local dir=$1
   split_tables $dir 2>/dev/null
-  for ofile in $dir/*.org; do
-    echo converting $ofile
-    org2docx_json $ofile
-  done
+  # for ofile in $dir/*.org; do
+  #   echo converting $ofile
+  #   org2docx_json $ofile
+  # done
 }
 
 main $1
