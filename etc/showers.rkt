@@ -6,6 +6,20 @@
 (define (create-interval start-time end-time)
   (cons start-time end-time))
 
+;;; Duplicate definitions for now.
+(define (tsv->table tsv-path)
+  (define (fields line) (regexp-split #px"\t" line))
+  (define (doit in)
+    (define (rl) (read-line in 'any))
+    (define header (fields (rl)))
+    (let loop ((l (rl))
+               (r (list)))
+      (if (eof-object? l)
+          (reverse r)
+          (loop (rl)
+                (cons (map cons header (fields l)) r)))))
+  (call-with-input-file tsv-path doit))
+
 (define (hm->min hm)
   (let* ((hma (regexp-match #px"(.+):([0-9]+)\\s*(..)" hm))
          (h   (string->number (list-ref hma 1)))
@@ -61,10 +75,13 @@
   (define shower-times-tab
     '(("time" .  "8:30 am")
       ("time" . "12:50 pm")))
-  (define showers-tab
+  (define showers-tab0
     '((("room" . "Men Soak") ("capacity" . "2"))
       (("room" . "Women Soak") ("capacity" . "2"))
       (("room" . "Shower SEB2") ("capacity" . "1"))))
+  (define showers-tab
+    (tsv->table
+     "/home/ejk/rzc/sesshin-greeter/test-data/good/showers.tsv"))
   (define roster-tab
     '((("name" . "Fred Flintstone")
        ("m/f" . "m")
@@ -81,13 +98,13 @@
       (("name" . "Aphrodite Finknottle")
        ("m/f" . "f")
        ("jobs" . "job1")
-       ("room" . "SEB 7")
+       ("room" . "SE 7")
        ("bath" . "")
        ("bath time" . ""))
       (("name" . "Fabian Snodgrass")
        ("m/f" . "m")
        ("jobs" . "job3")
-       ("room" . "SEB 6")
+       ("room" . "W 6")
        ("bath" . "")
        ("bath time" . "8:30 am"))
       (("name" . "Cadwallader Colden")
@@ -129,13 +146,68 @@
          (shower-start->shower-interval (cdr s)))
        (table-for 'shower-times)))
 
-(define all-loc&time
-  (let ((showers (map (lambda (s) (rget "room" s))
-                      (table-for 'showers)))
-        (add-intervals (lambda (shower)
-                         (map (lambda (interval)
-                                (list shower interval))
-                              shower-intervals))))
+;;; Sort shower locations by bedroom so that we assign showers that
+;;; are nearby.
+;;;
+;;; |-----+--------------|
+;;; | bed | showers      |
+;;; |-----+--------------|
+;;; | SE  | SE, SEB, ... |
+;;; | SEB | SEB, SE, ... |
+;;; | E   | SE, SEB, ... |
+;;; | W   | NW, NEB, ... |
+;;; | NE  | NEB, ...     |
+;;; | BNE | NEB, ...     |
+;;; |-----+--------------|
+;;;
+;;; Argument bedroomm is a string and showers is a list of strings.
+
+(define (prioritize-showers showers bedroom)
+  (define p<
+    (cond
+     ((regexp-match? #px"SE[^B]|^E" bedroom) ; southeast/east 1st fl.
+      (lambda (a b)
+        (cond
+         ((regexp-match? #px"SE[^B]" a) #t)
+         ((regexp-match? #px"SE[^B]" b) #f)
+         ((regexp-match? #px"SE"     a) #t)
+         ((regexp-match? #px"SE"     b) #f)
+         (else                          #t))))
+     ((regexp-match? #px"SE" bedroom)   ; southeast basement
+      (lambda (a b)
+        (cond
+         ((regexp-match? #px"SEB" a) #t)
+         ((regexp-match? #px"SEB" b) #f)
+         ((regexp-match? #px"SE"  a) #t)
+         ((regexp-match? #px"SE"  b) #f)
+         (else                       #t))))
+     ((regexp-match? #px"W" bedroom)    ; west
+      (lambda (a b)
+        (cond
+         ((regexp-match? #px"NW"   a) #t)
+         ((regexp-match? #px"NW"   b) #f)
+         ((regexp-match? #px"NEB"  a) #t)
+         ((regexp-match? #px"NEB"  b) #f)
+         (else                       #t))))
+     ((regexp-match? #px"NE" bedroom)    ; northeast
+      (lambda (a b)
+        (cond
+         ((regexp-match? #px"NEB" a) #t)
+         ((regexp-match? #px"NEB" b) #f)
+         (else                       #t))))
+     (else (lambda (a b) #t))))
+  (sort showers p<))
+
+(define (all-loc&time bedroom)
+  (let* ((showers (map (lambda (s) (rget "room" s))
+                       (table-for 'showers)))
+         (showers (filter (lambda (s) (not (string=? s "Bath SE1")))
+                          showers))
+         (showers (prioritize-showers showers bedroom))
+         (add-intervals (lambda (shower)
+                          (map (lambda (interval)
+                                 (list shower interval))
+                               shower-intervals))))
     (apply append (map add-intervals showers))))
 
 (define *stack* '())
@@ -154,7 +226,6 @@
 (define (eos? k) (eq? k 'stack-empty))
 
 (define (backup)
-  (display (format "backing up~%"))     ;delete me
   (let ((k (pop)))
     (if (eos? k)
         (error 'impossible)
@@ -182,21 +253,22 @@
 ;;; The preliminary table may indicate that an individual is to use a
 ;;; certain bath, a certain bath time or both.
 (define (initialize-assigs)
-  (define (init-nglt roster-entry)
+  (define (init-a-info roster-entry)
     (let* ((n (rget "name" roster-entry))
            (g (rget "m/f" roster-entry))
+           (r (rget "room" roster-entry))
            (l (rget "bath" roster-entry))
            (l (if (string=? l "") 'undefined l))
            (t (shower-start->shower-interval
                (rget "bath time" roster-entry))))
-      (list n g l t)))
-  (map init-nglt (table-for 'roster)))
+      (list n g r l t)))
+  (map init-a-info (table-for 'roster)))
 
 ;;; Find a bath and bath time for individual w/possible partial
-;;; pre-assignment. (nglt is the preliminary name/gender/location/time
-;;; interval.)
-(define (update-assigs nglt assigs)
-  (match-let (((list name gender loc time) nglt))
+;;; pre-assignment. (a-info is the preliminary
+;;; name/gender/bedroom/location/time interval.)
+(define (update-assigs a-info assigs)
+  (match-let (((list name gender room loc time) a-info))
     (define (used-already? loc&time)
       (let ((n (length
                 (filter (lambda (a) (equal? loc&time (cdr a)))
@@ -223,7 +295,7 @@
            (loc-ok? loc&time)
            (time-ok? loc&time)
            (good-sex? loc&time)))
-    (let loop ((l&t all-loc&time))
+    (let loop ((l&t (all-loc&time room)))
       (cond
        ((null? l&t) (backup))
        ((note (works? (car l&t)))
@@ -233,7 +305,6 @@
 (define (create-assignments)
   (let loop ((pre-assigs  (initialize-assigs))
              (post-assigs '()))
-    (display (format "~%pre: ~a~%post: ~a~%" pre-assigs post-assigs))
     (if (null? pre-assigs)
         post-assigs
         (loop (cdr pre-assigs)
