@@ -62,16 +62,23 @@
 
 ;;; * data
 (define (table-for tab)
-  (define job-times-tab
+  (define jobs-tab
     '((("job" . "job1")
-       ("intervals" . (("9:30 pm" . "10:30 pm"))))
+       ("description" . "")
+       ("department" . "")
+       ("interval" . "9:30 pm 10:30 pm"))
       (("job" . "job2")
-       ("intervals" . (("12:30 pm" . "1:30 pm")
-                       ("5:30 pm" . "6:30 pm"))))
+       ("description" . "")
+       ("department" . "")
+       ("interval" . ""))
       (("job" . "job3")
-       ("intervals" . (("12:30 pm" . "1:30 pm"))))
+       ("description" . "")
+       ("department" . "")
+       ("interval" . "12:30 pm   1:30 pm"))
       (("job" . "job4")
-       ("intervals" . (("8:30 am" . "9:30 am"))))))
+       ("description" . "")
+       ("department" . "")
+       ("interval" . "8:30 am 9:30 am"))))
   (define shower-times-tab
     '(("time" .  "8:30 am")
       ("time" . "12:50 pm")))
@@ -117,7 +124,7 @@
     [(roster)       roster-tab]
     [(shower-times) shower-times-tab]
     [(showers)      showers-tab]
-    [(job-times)    job-times-tab]
+    [(jobs)         jobs-tab]
     [else 'not-found]))
 ;;; * showers
 ;;;
@@ -201,8 +208,7 @@
 (define (all-loc&time bedroom)
   (let* ((showers (map (lambda (s) (rget "room" s))
                        (table-for 'showers)))
-         (showers (filter (lambda (s) (not (string=? s "Bath SE1")))
-                          showers))
+         (showers (remove "Bath SE1" showers))
          (showers (prioritize-showers showers bedroom))
          (add-intervals (lambda (shower)
                           (map (lambda (interval)
@@ -238,12 +244,21 @@
     (jobs-list (car r)))
    (else (jobs-for name (cdr r)))))
 
+(define (string-interval->time-interval string-interval)
+  (if (string=? string-interval "")
+      '()
+      (let* ((r "[0-9]+:[0-9]{2}\\s*[ap]m")
+             (r (pregexp (format "(~a)\\s*(~a)" r r)))
+             (r (regexp-match r string-interval)))
+        (apply create-interval (cdr r)))))
+
 (define (job-times-for jobs)
   (define (job-times-for-a job)
-    (rget "intervals"
-          (car (filter (lambda (jt) (string=? (rget "job" jt) job))
-                       (table-for 'job-times)))))
-  (apply append (map job-times-for-a jobs)))
+    (string-interval->time-interval
+     (rget "interval"
+           (car (filter (lambda (jt) (string=? (rget "job" jt) job))
+                        (table-for 'jobs))))))
+  (remove* '(()) (map job-times-for-a jobs)))
 
 (define (capacity-for shower)
   (string->number
