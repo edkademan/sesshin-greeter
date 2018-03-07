@@ -6,6 +6,9 @@
 (define (create-interval start-time end-time)
   (cons start-time end-time))
 
+(define (interval-start time-interval) (car time-interval))
+(define (interval-stop  time-interval) (cdr time-interval))
+
 ;;; Duplicate definitions for now.
 (define (tsv->table tsv-path)
   (define (fields line) (regexp-split #px"\t" line))
@@ -38,13 +41,10 @@
                      "am" "pm")))
       (format "~a:~a ~a" h (cat m 2 #\0) ampm))))
 
-(define (interval-start time-interval) (car time-interval))
-(define (interval-end   time-interval) (cdr time-interval))
-
 (define (time-collision? interval list-of-intervals)
   (define (to-min interval)
     (create-interval (hm->min (interval-start interval))
-                     (hm->min (interval-end   interval))))
+                     (hm->min (interval-stop  interval))))
   (define (collision? i1 i2)
     (let* ((i1 (to-min i1))
            (i2 (to-min i2))
@@ -54,7 +54,7 @@
         (set! j2 i2)
         (set! i2 i1)
         (set! i1 j2))
-      (>= (interval-end i1) (interval-start i2))))
+      (>= (interval-stop i1) (interval-start i2))))
   (cond
    ((null? list-of-intervals) #f)
    ((collision? interval (car list-of-intervals)) #t)
@@ -81,7 +81,8 @@
        ("interval" . "8:30 am 9:30 am"))))
   (define shower-times-tab
     '(("time" .  "8:30 am")
-      ("time" . "12:50 pm")))
+      ("time" . "12:50 pm")
+      ("time" .  "5:50 pm")))
   (define showers-tab0
     '((("room" . "Men Soak") ("capacity" . "2"))
       (("room" . "Women Soak") ("capacity" . "2"))
@@ -119,7 +120,7 @@
        ("jobs" . "job4")
        ("room" . "BNE 1")
        ("bath" . "")
-       ("bath time" . ""))))
+       ("bath time" . "3:00pm 11:00pm"))))
   (case tab
     [(roster)       roster-tab]
     [(shower-times) shower-times-tab]
@@ -152,6 +153,20 @@
   (map (lambda (s)
          (shower-start->shower-interval (cdr s)))
        (table-for 'shower-times)))
+
+(define (string-interval->time-interval string-interval)
+  (if (string=? string-interval "")
+      '()
+      (let* ((r "[0-9]+:[0-9]{2}\\s*[ap]m")
+             (r (pregexp (format "(~a)[,\\s]*(~a)" r r)))
+             (r (regexp-match r string-interval)))
+        (apply create-interval (cdr r)))))
+
+(define (create-shower-interval s)
+  (define (string-interval? s) (regexp-match? #px"[ap]m.*[ap]m" s))
+  (if (string-interval? s)
+      (string-interval->time-interval s)
+      (shower-start->shower-interval s)))
 
 ;;; Sort shower locations by bedroom so that we assign showers that
 ;;; are nearby.
@@ -244,14 +259,6 @@
     (jobs-list (car r)))
    (else (jobs-for name (cdr r)))))
 
-(define (string-interval->time-interval string-interval)
-  (if (string=? string-interval "")
-      '()
-      (let* ((r "[0-9]+:[0-9]{2}\\s*[ap]m")
-             (r (pregexp (format "(~a)\\s*(~a)" r r)))
-             (r (regexp-match r string-interval)))
-        (apply create-interval (cdr r)))))
-
 (define (job-times-for jobs)
   (define (job-times-for-a job)
     (string-interval->time-interval
@@ -274,14 +281,14 @@
            (r (rget "room" roster-entry))
            (l (rget "bath" roster-entry))
            (l (if (string=? l "") 'undefined l))
-           (t (shower-start->shower-interval
+           (t (create-shower-interval
                (rget "bath time" roster-entry))))
       (list n g r l t)))
   (map init-a-info (table-for 'roster)))
 
 ;;; Find a bath and bath time for individual w/possible partial
 ;;; pre-assignment. (a-info is the preliminary
-;;; name/gender/bedroom/location/time interval.)
+;;; name/gender/bedroom/location/showerable-time-interval.)
 (define (update-assigs a-info assigs)
   (match-let (((list name gender room loc time) a-info))
     (define (used-already? loc&time)
@@ -289,13 +296,18 @@
                 (filter (lambda (a) (equal? loc&time (cdr a)))
                         assigs))))
         (>= n (capacity-for (car loc&time)))))
-    (define (time-conflict? loc&time)
+    (define (time-conflict? loc&time)   ; job forbids
       (time-collision? (cadr loc&time)
                        (job-times-for (jobs-for name))))
     (define (loc-ok? loc&time)
       (or (eq? loc 'undefined) (string=? loc (car loc&time))))
     (define (time-ok? loc&time)
-      (or (eq? time 'undefined) (equal? time (cadr loc&time))))
+      (let ((s-time (cadr loc&time)))
+        (or (eq? time 'undefined)
+            (and (>= (hm->min (interval-start s-time))
+                     (hm->min (interval-start time)))
+                 (<= (hm->min (interval-stop  s-time))
+                     (hm->min (interval-stop  time)))))))
     (define (good-sex? loc&time)
       (let* ((l (car loc&time))
              (g (cond
@@ -317,7 +329,7 @@
         (cons (cons name (car l&t)) assigs))
        (else (loop (cdr l&t)))))))
 
-(define (create-assignments)
+(define (create-shower-assignments)
   (let loop ((pre-assigs  (initialize-assigs))
              (post-assigs '()))
     (if (null? pre-assigs)
