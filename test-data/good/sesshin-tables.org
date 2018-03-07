@@ -2,7 +2,7 @@
 
 #+name: roster
 |-----------------+-----+------------+--------+---------+---------+-------+-------+-----+------|
-| name            | m/f | jobs       | room   | bath    | bath time | origin | full/part | fee | dues |
+| name            | m/f | jobs       | room   | shower  | shower time | origin | full/part | fee | dues |
 |-----------------+-----+------------+--------+---------+---------+-------+-------+-----+------|
 | Adler, Max      | m   | hk-shower  | SEB 4  | Shower SEB3 | 5:40 pm | Rochester, NY | 6 days |   0 |    0 |
 | Basham, Bryan   | m   | kt-tt      | SEB 4  | Men Soak | 12:50 pm | Rochester, NY | full  |   0 |    0 |
