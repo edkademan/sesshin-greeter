@@ -40,8 +40,8 @@ hk-foyer	Foyer & Entrance	housekeeping
 hk-vacum	Vacuuming	housekeeping	
 hk-soak	Soaking Baths	housekeeping	
 hk-trash	Trash Pickup	housekeeping	
-hk-proj1	Project I	housekeeping	8:30am 2:00pm
-hk-proj2	Project II	housekeeping	8:30am 10:00am
+hk-proj1	Project I	housekeeping	
+hk-proj2	Project II	housekeeping	
 ou-snow	Snow Duty	outdoors	
 ou-worker	Outdoor Work	outdoors	8:30am 9:00am
 mt-run	Runner	maintenance	

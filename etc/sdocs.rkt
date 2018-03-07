@@ -872,7 +872,7 @@
 
 (define (shower-intervals)
   (map (lambda (s)
-         (shower-start->shower-interval (cdr s)))
+         (shower-start->shower-interval (cdar s)))
        (table-for 'shower-times)))
 
 (define (string-interval->time-interval string-interval)
