@@ -260,10 +260,10 @@
 
 ;;; ** Debug
 
-(define (init-greet)
+(define (init-greet [input-subdir "good"])
   (home-dir        (build-path "/home/ejk/rzc/sesshin-greeter"))
   (external-format 'tsv)
-  (input-dir       (build-path (home-dir) "test-data" "good"))
+  (input-dir       (build-path (home-dir) "test-data" input-subdir))
   (output-dir      (build-path (home-dir) "out"))
   (doc-title       (default-title))
   (set! table-for  (compile-source)))
