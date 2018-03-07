@@ -63,94 +63,96 @@
 * Jobs/Duties Table
 
 #+name: jobs
-|-----------+------------+-------+----------|
-| job       | description | department | interval |
-|-----------+------------+-------+----------|
-| kt-head   | Head Cook/A.M. Supervisor | kitchen |          |
-| kt-dinner | Dinner Cook | kitchen |          |
-| kt-break  | Breakfast Cook | kitchen |          |
-| kt-lunch  | Lunch Cook | kitchen |          |
-| kt-soup   | Soup Cook  | kitchen |          |
-| kt-cass   | Casserole Cook | kitchen |          |
-| kt-veg    | Vegetable Cook | kitchen |          |
-| kt-dress  | Dressing Cook | kitchen |          |
-| kt-salad  | Salad      | kitchen |          |
-| kt-aml1   | A.M. Leftovers I | kitchen |          |
-| kt-aml2   | A.M. Leftovers II | kitchen |          |
-| kt-amc1   | A.M. Cleanup I | kitchen |          |
-| kt-amc2   | A.M. Cleanup II | kitchen |          |
-| kt-amdw   | A.M. Dish Washer | kitchen |          |
-| kt-amdd   | A.M. Dish Dryer | kitchen |          |
-| kt-amas   | A.M. Dishes Assistant | kitchen |          |
-| kt-pml1   | P.M. Leftovers I | kitchen |          |
-| kt-pml2   | P.M. Leftovers II | kitchen |          |
-| kt-pmc    | P.M. Cleanup | kitchen |          |
-| kt-tt     | Tea Table  | kitchen |          |
-| kt-amwtr  | A.M. Waiter | kitchen |          |
-| kt-pmwtr  | P.M. Waiter | kitchen |          |
-| kt-pmdw   | P.M. Dish Washer | kitchen |          |
-| kt-pmdd   | P.M. Dish Dryer/Supervisor | kitchen |          |
-| kt-baker  | Baker      | kitchen |          |
-| kt-apple  | Applesauce | kitchen |          |
-| hk-super  | Indoor Supervisor | housekeeping |          |
-| hk-laund  | Laundry    | housekeeping |          |
-| hk-zen1   | Zendo I    | housekeeping |          |
-| hk-zen2   | Zendo II, Dokusan Room & Line | housekeeping |          |
-| hk-flower | Flowers & Altars | housekeeping |          |
-| hk-shower | Showers    | housekeeping |          |
-| hk-mop    | Mopping Bathrooms | housekeeping |          |
-| hk-bath1  | Bathrooms I | housekeeping |          |
-| hk-bath2  | Bathrooms II | housekeeping |          |
-| hk-bath3  | Bathrooms III | housekeeping |          |
-| hk-foyer  | Foyer & Entrance | housekeeping |          |
-| hk-vacum  | Vacuuming  | housekeeping |          |
-| hk-soak   | Soaking Baths | housekeeping |          |
-| hk-trash  | Trash Pickup | housekeeping |          |
-| hk-proj1  | Project I  | housekeeping |          |
-| hk-proj2  | Project II | housekeeping |          |
-| ou-snow   | Snow Duty  | outdoors |          |
-| mt-run    | Runner     | maintenance |          |
-| mt-wt1    | Water Table, Wake-up—Teisho | maintenance |          |
-| mt-wt2    | Water Table, After Teisho—Chanting | maintenance |          |
-| mt-wt3    | Water Table, Dinner—9:30 P.M. | maintenance |          |
-| zn-mon    | Monitor    | zendo |          |
-| zn-time   | Timer      | zendo |          |
-| zn-block  | Zazen Block | zendo |          |
-| zn-cand   | Candles/Incense | zendo |          |
-| zn-ump    | Head Cook & Umpan | zendo |          |
-| zn-wdrum  | Work Drum  | zendo |          |
-| zn-calis  | Calisthenics | zendo |          |
-| zn-greet  | Greeter    | zendo |          |
-| zn-hdrum  | Chanting Drum | zendo-chant |          |
-| zn-hcand  | Chanting Candles/Incense | zendo-chant |          |
-| zn-hbook1 | Chanting Booklets (1-18) | zendo-chant |          |
-| zn-hbook2 | Chanting Booklets (19-35) | zendo-chant |          |
-| zn-hbook3 | Chanting Booklets (36-52) | zendo-chant |          |
-| zn-hkeisu | Chanting Keisu | zendo-chant |          |
-| zn-hmokg  | Chanting Mokugyo | zendo-chant |          |
-| zn-tblock | Teisho Block | zendo-teisho |          |
-| zn-ttan   | Teisho Tan | zendo-teisho |          |
-| zn-tcand  | Teisho Candles/Incense | zendo-teisho |          |
-| zn-tlect  | Teisho Lectern | zendo-teisho |          |
-| zn-echan  | Evening Ritual Chanting | zendo-eve |          |
-| zn-eblock | Evening Ritual Block | zendo-eve |          |
-| zn-adrum  | Opening Ceremony Drum | zendo-open |          |
-| zn-acand  | Opening Ceremony Candles | zendo-open |          |
-| zn-abell  | Opening Ceremony Bell | zendo-open |          |
-| zn-atan   | Opening Ceremony Tan | zendo-open |          |
-| zn-atea   | Opening Ceremony Tea Server | zendo-open |          |
-| zn-zdrum  | Closing Ceremony Drum | zendo-close |          |
-| zn-ztan   | Closing Ceremony Tan | zendo-close |          |
-| zn-zcand  | Closing Ceremony Candles | zendo-close |          |
-| zn-zkeisu | Closing Ceremony Keisu | zendo-close |          |
-| zn-zmokg  | Closing Ceremony Mokugyo | zendo-close |          |
-| zn-zkyo   | Closing Ceremony Kyosakus | zendo-close |          |
-| zn-zbell  | Closing Ceremony Dokusan Bell | zendo-close |          |
-| zn-zblock | Closing Ceremony Block | zendo-close |          |
-| zn-zmusic | Closing Ceremony Music | zendo-close |          |
-|-----------+------------+-------+----------|
-|           | <10>       | <5>   |          |
-|-----------+------------+-------+----------|
+|-----------+------------+-------+----------------|
+| job       | description | department | interval       |
+|-----------+------------+-------+----------------|
+| kt-head   | Head Cook/A.M. Supervisor | kitchen |                |
+| kt-dinner | Dinner Cook | kitchen | 12:30pm 9:00pm |
+| kt-break  | Breakfast Cook | kitchen | 9:30pm 11:30pm |
+| kt-lunch  | Lunch Cook | kitchen |                |
+| kt-soup   | Soup Cook  | kitchen |                |
+| kt-cass   | Casserole Cook | kitchen |                |
+| kt-veg    | Vegetable Cook | kitchen |                |
+| kt-dress  | Dressing Cook | kitchen |                |
+| kt-yogurt | Yogurt Cook | kitchen | 5:30pm 7:00pm  |
+| kt-salad  | Salad      | kitchen |                |
+| kt-aml1   | A.M. Leftovers I | kitchen | 12:30pm 2:00pm |
+| kt-aml2   | A.M. Leftovers II | kitchen | 12:30pm 2:00pm |
+| kt-amc1   | A.M. Cleanup I | kitchen | 12:30pm 2:00pm |
+| kt-amc2   | A.M. Cleanup II | kitchen | 12:30pm 2:00pm |
+| kt-amdw   | A.M. Dish Washer | kitchen | 12:30pm 2:00pm |
+| kt-amdd   | A.M. Dish Dryer | kitchen | 12:30pm 2:00pm |
+| kt-amas   | A.M. Dishes Assistant | kitchen | 12:30pm 2:00pm |
+| kt-pml1   | P.M. Leftovers I | kitchen | 5:30pm 7:00pm  |
+| kt-pml2   | P.M. Leftovers II | kitchen | 5:30pm 7:00pm  |
+| kt-pmc    | P.M. Cleanup | kitchen | 5:30pm 7:00pm  |
+| kt-tt     | Tea Table  | kitchen | 5:30pm 9:50pm  |
+| kt-amwtr  | A.M. Waiter | kitchen | 12:30pm 7:00pm |
+| kt-pmwtr  | P.M. Waiter | kitchen | 5:30pm 7:00pm  |
+| kt-pmdw   | P.M. Dish Washer | kitchen | 5:30pm 7:00pm  |
+| kt-pmdd   | P.M. Dish Dryer/Supervisor | kitchen | 5:30pm 7:00pm  |
+| kt-baker  | Baker      | kitchen | 8:30am 2:00pm  |
+| kt-apple  | Applesauce | kitchen | 5:30pm 7:00pm  |
+| hk-super  | Indoor Supervisor | housekeeping |                |
+| hk-laund  | Laundry    | housekeeping |                |
+| hk-zen1   | Zendo I    | housekeeping |                |
+| hk-zen2   | Zendo II, Dokusan Room & Line | housekeeping |                |
+| hk-flower | Flowers & Altars | housekeeping |                |
+| hk-shower | Showers    | housekeeping |                |
+| hk-mop    | Mopping Bathrooms | housekeeping |                |
+| hk-bath1  | Bathrooms I | housekeeping |                |
+| hk-bath2  | Bathrooms II | housekeeping |                |
+| hk-bath3  | Bathrooms III | housekeeping |                |
+| hk-foyer  | Foyer & Entrance | housekeeping |                |
+| hk-vacum  | Vacuuming  | housekeeping |                |
+| hk-soak   | Soaking Baths | housekeeping |                |
+| hk-trash  | Trash Pickup | housekeeping |                |
+| hk-proj1  | Project I  | housekeeping | 8:30am 2:00pm  |
+| hk-proj2  | Project II | housekeeping | 8:30am 10:00am |
+| ou-snow   | Snow Duty  | outdoors |                |
+| ou-worker | Outdoor Work | outdoors | 8:30am 9:00am  |
+| mt-run    | Runner     | maintenance |                |
+| mt-wt1    | Water Table, Wake-up—Teisho | maintenance |                |
+| mt-wt2    | Water Table, After Teisho—Chanting | maintenance |                |
+| mt-wt3    | Water Table, Dinner—9:30 P.M. | maintenance |                |
+| zn-mon    | Monitor    | zendo |                |
+| zn-time   | Timer      | zendo |                |
+| zn-block  | Zazen Block | zendo |                |
+| zn-cand   | Candles/Incense | zendo |                |
+| zn-ump    | Head Cook & Umpan | zendo |                |
+| zn-wdrum  | Work Drum  | zendo |                |
+| zn-calis  | Calisthenics | zendo |                |
+| zn-greet  | Greeter    | zendo |                |
+| zn-hdrum  | Chanting Drum | zendo-chant |                |
+| zn-hcand  | Chanting Candles/Incense | zendo-chant |                |
+| zn-hbook1 | Chanting Booklets (1-18) | zendo-chant |                |
+| zn-hbook2 | Chanting Booklets (19-35) | zendo-chant |                |
+| zn-hbook3 | Chanting Booklets (36-52) | zendo-chant |                |
+| zn-hkeisu | Chanting Keisu | zendo-chant |                |
+| zn-hmokg  | Chanting Mokugyo | zendo-chant |                |
+| zn-tblock | Teisho Block | zendo-teisho |                |
+| zn-ttan   | Teisho Tan | zendo-teisho |                |
+| zn-tcand  | Teisho Candles/Incense | zendo-teisho |                |
+| zn-tlect  | Teisho Lectern | zendo-teisho |                |
+| zn-echan  | Evening Ritual Chanting | zendo-eve |                |
+| zn-eblock | Evening Ritual Block | zendo-eve |                |
+| zn-adrum  | Opening Ceremony Drum | zendo-open |                |
+| zn-acand  | Opening Ceremony Candles | zendo-open |                |
+| zn-abell  | Opening Ceremony Bell | zendo-open |                |
+| zn-atan   | Opening Ceremony Tan | zendo-open |                |
+| zn-atea   | Opening Ceremony Tea Server | zendo-open |                |
+| zn-zdrum  | Closing Ceremony Drum | zendo-close |                |
+| zn-ztan   | Closing Ceremony Tan | zendo-close |                |
+| zn-zcand  | Closing Ceremony Candles | zendo-close |                |
+| zn-zkeisu | Closing Ceremony Keisu | zendo-close |                |
+| zn-zmokg  | Closing Ceremony Mokugyo | zendo-close |                |
+| zn-zkyo   | Closing Ceremony Kyosakus | zendo-close |                |
+| zn-zbell  | Closing Ceremony Dokusan Bell | zendo-close |                |
+| zn-zblock | Closing Ceremony Block | zendo-close |                |
+| zn-zmusic | Closing Ceremony Music | zendo-close |                |
+|-----------+------------+-------+----------------|
+|           | <10>       | <5>   |                |
+|-----------+------------+-------+----------------|
 
 * Rooms Table
 

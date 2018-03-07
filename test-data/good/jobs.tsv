@@ -1,30 +1,31 @@
 job	description	department	interval
 kt-head	Head Cook/A.M. Supervisor	kitchen	
-kt-dinner	Dinner Cook	kitchen	
-kt-break	Breakfast Cook	kitchen	
+kt-dinner	Dinner Cook	kitchen	12:30pm 9:00pm
+kt-break	Breakfast Cook	kitchen	9:30pm 11:30pm
 kt-lunch	Lunch Cook	kitchen	
 kt-soup	Soup Cook	kitchen	
 kt-cass	Casserole Cook	kitchen	
 kt-veg	Vegetable Cook	kitchen	
 kt-dress	Dressing Cook	kitchen	
+kt-yogurt	Yogurt Cook	kitchen	5:30pm 7:00pm
 kt-salad	Salad	kitchen	
-kt-aml1	A.M. Leftovers I	kitchen	
-kt-aml2	A.M. Leftovers II	kitchen	
-kt-amc1	A.M. Cleanup I	kitchen	
-kt-amc2	A.M. Cleanup II	kitchen	
-kt-amdw	A.M. Dish Washer	kitchen	
-kt-amdd	A.M. Dish Dryer	kitchen	
-kt-amas	A.M. Dishes Assistant	kitchen	
-kt-pml1	P.M. Leftovers I	kitchen	
-kt-pml2	P.M. Leftovers II	kitchen	
-kt-pmc	P.M. Cleanup	kitchen	
-kt-tt	Tea Table	kitchen	
-kt-amwtr	A.M. Waiter	kitchen	
-kt-pmwtr	P.M. Waiter	kitchen	
-kt-pmdw	P.M. Dish Washer	kitchen	
-kt-pmdd	P.M. Dish Dryer/Supervisor	kitchen	
-kt-baker	Baker	kitchen	
-kt-apple	Applesauce	kitchen	
+kt-aml1	A.M. Leftovers I	kitchen	12:30pm 2:00pm
+kt-aml2	A.M. Leftovers II	kitchen	12:30pm 2:00pm
+kt-amc1	A.M. Cleanup I	kitchen	12:30pm 2:00pm
+kt-amc2	A.M. Cleanup II	kitchen	12:30pm 2:00pm
+kt-amdw	A.M. Dish Washer	kitchen	12:30pm 2:00pm
+kt-amdd	A.M. Dish Dryer	kitchen	12:30pm 2:00pm
+kt-amas	A.M. Dishes Assistant	kitchen	12:30pm 2:00pm
+kt-pml1	P.M. Leftovers I	kitchen	5:30pm 7:00pm
+kt-pml2	P.M. Leftovers II	kitchen	5:30pm 7:00pm
+kt-pmc	P.M. Cleanup	kitchen	5:30pm 7:00pm
+kt-tt	Tea Table	kitchen	5:30pm 9:50pm
+kt-amwtr	A.M. Waiter	kitchen	12:30pm 7:00pm
+kt-pmwtr	P.M. Waiter	kitchen	5:30pm 7:00pm
+kt-pmdw	P.M. Dish Washer	kitchen	5:30pm 7:00pm
+kt-pmdd	P.M. Dish Dryer/Supervisor	kitchen	5:30pm 7:00pm
+kt-baker	Baker	kitchen	8:30am 2:00pm
+kt-apple	Applesauce	kitchen	5:30pm 7:00pm
 hk-super	Indoor Supervisor	housekeeping	
 hk-laund	Laundry	housekeeping	
 hk-zen1	Zendo I	housekeeping	
@@ -39,9 +40,10 @@ hk-foyer	Foyer & Entrance	housekeeping
 hk-vacum	Vacuuming	housekeeping	
 hk-soak	Soaking Baths	housekeeping	
 hk-trash	Trash Pickup	housekeeping	
-hk-proj1	Project I	housekeeping	
-hk-proj2	Project II	housekeeping	
+hk-proj1	Project I	housekeeping	8:30am 2:00pm
+hk-proj2	Project II	housekeeping	8:30am 10:00am
 ou-snow	Snow Duty	outdoors	
+ou-worker	Outdoor Work	outdoors	8:30am 9:00am
 mt-run	Runner	maintenance	
 mt-wt1	Water Table, Wake-up—Teisho	maintenance	
 mt-wt2	Water Table, After Teisho—Chanting	maintenance	
