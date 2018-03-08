@@ -295,4 +295,16 @@ lowriter --convert-to docx ${odtfile}
   - Create executable
     raco exe s-docs.rkt
     raco distribute standalone s-docs.exe
+* size of shower problem
+  Since there are 10 different shower/baths in the retreat center and
+  9 different shower times during sesshin the total number of
+  shower/shower-time slots to which one can assign a participant is
+  10×9 = 90. If there are 50 participants in the sesshin that means
+  there are 90 choose 50 or
 
+    59870908646972742699313758
+
+  different ways of assigning shower/shower times. If it takes the
+  computer one nanosecond to check each way---that is, if it can check
+  1e9 ways per second---then it will take 1.9e9 or 2 billion years to
+  check all of them.
