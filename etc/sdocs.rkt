@@ -265,6 +265,9 @@
         (apply format "~a:~a ~a"
                (cdr (regexp-match regex time-string))))))
 
+(define (ignore-shower? roster-entry)
+  (regexp-match? #px"[iI]gnore" (rget "shower" roster-entry)))
+
 ;;; ** Debug
 
 (define (init-greet [input-subdir "good"])
@@ -1002,11 +1005,23 @@
    (cdadr
     (assoc (cons "room" shower) (table-for 'showers)))))
 
+(define (prioritize-roster)
+  (define (time-set? e) (not (string=? (rget "shower time" e) "")))
+  (define (shower-set? e)
+    (not (or (ignore-shower? e)
+             (string=? (rget "shower" e) ""))))
+  (define (r< a b)
+    (cond
+     ((and (shower-set? a) (time-set? a)) #t)
+     ((and (shower-set? b) (time-set? b)) #f)
+     ((or (shower-set? a) (time-set? a)) #t)
+     ((or (shower-set? b) (time-set? b)) #f)
+     (else #t)))
+  (sort (table-for 'roster) r<))
+
 ;;; The preliminary table may indicate that an individual is to use a
 ;;; certain shower, a certain shower time or both.
-(define (initialize-assigs [roster (table-for 'roster)] [a '()])
-  (define (ignore-entry? e)
-    (regexp-match? #px"[iI]gnore" (rget "shower" e)))
+(define (initialize-assigs [roster (prioritize-roster)] [a '()])
   (define (process-entry e)
     (let* ((n (rget "name" e))
            (g (rget "m/f" e))
@@ -1018,7 +1033,7 @@
       (list n g r s t)))
   (cond
    ((null? roster) (reverse a))
-   ((ignore-entry? (car roster))
+   ((ignore-shower? (car roster))
     (initialize-assigs (cdr roster) a))
    (else
     (initialize-assigs (cdr roster)
