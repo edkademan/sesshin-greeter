@@ -570,7 +570,7 @@
 (define roster-header
   (format-roster-entry "" "Room" "Shower" "Shower Time" "Jobs"))
 
-(define (roster-table->stanzas)
+(define (roster-table->stanzas roster-table)
   (define (extra-job-line extra-job)
     (format-roster-entry "" "" "" "" extra-job))
   (define (jobs-desc-list roster-entry)
@@ -584,16 +584,17 @@
              (regularize-hm (r "shower time"))
              (car jobs))
             (map extra-job-line (cdr jobs)))))
-  (let loop ((ros (table-for 'roster))
+  (let loop ((ros roster-table)
              (res (list)))
     (if (null? ros)
         (reverse res)
         (loop (cdr ros) (cons (create-stanza (car ros)) res)))))
 
-(define (roster-table->text page-length)
+(define (roster-table->text page-length roster-table)
   (define (add-nl str) (string-append str "\n"))
   (define (add-header stanzas) (cons (list roster-header "") stanzas))
-  (let loop ((stanzas (add-header (roster-table->stanzas)))
+  (let loop ((stanzas (add-header
+                       (roster-table->stanzas roster-table)))
              (lines-so-far 0)
              (r (list)))
     (cond
@@ -608,9 +609,11 @@
             (+ lines-so-far (length (car stanzas)))
             (append r (map add-nl (car stanzas))))))))
 
-(define (publish-roster [output-file-path
+(define (publish-roster [roster-table (table-for 'roster)]
+                        [output-file-path
                          (build-path (output-dir) "roster.pdf")])
-  (text->pdf (roster-table->text 55) output-file-path #:font-size 11))
+  (text->pdf (roster-table->text 55 roster-table)
+             output-file-path #:font-size 11))
 ;;; * checklist
 
 (define (publish-checklist
@@ -700,173 +703,6 @@
     (end-page)
     (end-doc)))
 
-;;; * publish
-(define (publish-all)
-  (publish-roster)
-  (publish-rooms)
-  (publish-showers)
-  (publish-jobs)
-  (publish-zendo-jobs)
-  (publish-checklist))
-;;; * diagnostics
-
-;;; People without valid jobs. 
-(define (people-w/bad-jobs)
-  (let* ((j (table-for 'jobs)))
-    (define (bad-job? job)
-      (not (member job (map (lambda (j) (rget "job" j)) j))))
-    (define (bad-jobs-for roster-entry)
-      (let ((jobs (jobs-list roster-entry)))
-        (cons (rget "name" roster-entry)
-              (filter bad-job? jobs))))
-    (filter (lambda (b) (not (null? (cdr b))))
-            (map bad-jobs-for (table-for 'roster)))))
-
-;;; Jobs without people
-(define (jobs-wo/people)
-  (define (job-unfilled? job)
-    (null? (filter
-            identity
-            (map (lambda (roster-entry)
-                   (member job (jobs-list roster-entry)))
-                 (table-for 'roster)))))
-  (filter job-unfilled?
-          (map (lambda (x) (rget "job" x)) (table-for 'jobs))))
-
-;;; People without valid rooms.
-(define (people-w/bad-rooms)
-  (let* ((m (table-for 'bedrooms)))
-    (define (bad-room? room)
-      (not (member room (map (lambda (m) (rget "room" m)) m))))
-    (define (bad-room-for roster-entry)
-      (let ((room (rget "room" roster-entry)))
-        (cons (rget "name" roster-entry)
-              (and (bad-room? room) room))))
-    (filter cdr (map bad-room-for (table-for 'roster)))))
-
-;;; People without valid showers.
-(define (people-w/bad-showers)
-  (let* ((s (table-for 'showers)))
-    (define (bad-shower? shower)
-      (not (member shower (map (lambda (s) (rget "room" s)) s))))
-    (define (bad-shower-for roster-entry)
-      (let ((shower (rget "shower" roster-entry)))
-        (cons (rget "name" roster-entry)
-              (and (bad-shower? shower) shower))))
-    (filter cdr (map bad-shower-for (table-for 'roster)))))
-
-;;; People with bad shower times.
-(define (people-w/bad-shower-times)
-  (let* ((t (table-for 'shower-times)))
-    (define (bad-shower-time? time)
-      (not (member time (map (lambda (t) (rget "time" t)) t))))
-    (define (bad-shower-time-for roster-entry)
-      (let ((time (regularize-hm (rget "shower time" roster-entry))))
-        (cons (rget "name" roster-entry)
-              (and (bad-shower-time? time) time))))
-    (filter cdr (map bad-shower-time-for (table-for 'roster)))))
-
-;;; Shower conflicts
-(define (shower-conflicts)
-  (let* ((s (table-for 'showers))
-         (times      (map cdar (table-for 'shower-times)))
-         (rooms      (map cdar s))
-         (capacities (map (lambda (s) (string->number (cdadr s))) s)))
-    (define (showerers-for time place)
-      (define (tp-match? roster-entry)
-        (and (string=? time  (rget "shower time" roster-entry))
-             (string=? place (rget "shower"      roster-entry))))
-      (map (lambda (x) (rget "name" x))
-           (filter tp-match? (table-for 'roster))))
-    (define (simultaneous-for place)
-      (map (lambda (time) (length (showerers-for time place)))
-           times))
-    (define (conflicts-for place cap)
-      (let* ((s (map (lambda (time) (list time
-                                     place
-                                     (showerers-for time place)))
-                     times))
-             (s (filter (lambda (x) (> (length (list-ref x 2)) cap))
-                        s)))
-        s))
-    (map car
-         (filter (lambda (x) (not (null? x)))
-                 (map conflicts-for rooms capacities)))))
-
-(define (lint [name-len 25])
-  (let ((p (people-w/bad-jobs)))
-    (cond
-     ((null? p) (display "Everyone has a job.\n"))
-     (else
-      (display "People with bad jobs:\n")
-      (let loop ((p p))
-        (when (not (null? p))
-          (display (format "~a  job: ~a~%"
-                           (cat (caar p) (- name-len)) (cadar p)))
-          (loop (cdr p)))))))
-
-  (let ((p (jobs-wo/people)))
-    (display "\n")
-    (cond
-     ((null? p) (display "All jobs are filled.\n"))
-     (else
-      (display "Jobs that aren't filled:\n")
-      (let loop ((p p))
-        (when (not (null? p))
-          (display (format "~a~%" (car p)))
-          (loop (cdr p)))))))
-
-  (let ((p (people-w/bad-rooms)))
-    (display "\n")
-    (cond
-     ((null? p) (display "Everyone has a room.\n"))
-     (else
-      (display "People with bad rooms:\n")
-      (let loop ((p p))
-        (when (not (null? p))
-          (display (format "~a  room: ~a~%"
-                           (cat (caar p) (- name-len)) (cdar p)))
-          (loop (cdr p)))))))
-  
-  (let ((p (people-w/bad-showers)))
-    (display "\n")
-    (cond
-     ((null? p) (display "Everyone has a shower/bath.\n"))
-     (else
-      (display "People with bad showers:\n")
-      (let loop ((p p))
-        (when (not (null? p))
-          (display (format "~a  room: ~a~%"
-                           (cat (caar p) (- name-len)) (cdar p)))
-          (loop (cdr p)))))))
-    
-  (let ((p (people-w/bad-shower-times)))
-    (display "\n")
-    (cond
-     ((null? p) (display "Everyone has a valid shower time.\n"))
-     (else
-      (display "People with bad shower times:\n")
-      (let loop ((p p))
-        (when (not (null? p))
-          (display (format "~a  room: ~a~%"
-                           (cat (caar p) (- name-len)) (cdar p)))
-          (loop (cdr p)))))))
-
-  (let ((p (shower-conflicts)))
-    (display "\n")
-    (cond
-     ((null? p) (display "There are no shower conflicts.\n"))
-     (else
-      (display "Shower conflicts:\n")
-      (let loop ((p p))
-        (when (not (null? p))
-          (let ((time   (list-ref (car p) 0))
-                (place  (list-ref (car p) 1))
-                (people (list-ref (car p) 2)))
-            (display (format "~a at ~a:  ~a~%"
-                             (cat place -15) (cat time 8)
-                             (list-ref (car p) 2))))
-          (loop (cdr p))))))))
 ;;; * assign showers
 ;;;
 ;;; An assig is a name-location-time combination. For example
@@ -1090,6 +926,205 @@
         post-assigs
         (loop (cdr pre-assigs)
               (update-assigs (car pre-assigs) post-assigs)))))
+
+;;; racket@sdocs.rkt> (create-shower-assignments)
+;;; '(("Adler, Max" "Shower SEB1" ("6:20 pm" . "6:40 pm"))
+;;;   ("Basham, Bryan" "Shower SEB1" ("10:00 pm" . "10:20 pm"))
+;;;
+;;; racket@sdocs.rkt> (car (table-for 'roster))
+;;; '(("name" . "Adler, Max")
+;;;   ("m/f" . "m")
+;;;   ("jobs" . "hk-shower")
+;;;   ("room" . "SEB 4")
+;;;   ("shower" . "")
+;;;   ("shower time" . "")
+;;;   ("origin" . "Rochester, NY")
+;;;   ("full/part" . "6 days")
+;;;   ("fee" . "0")
+;;;   ("dues" . "0"))
+
+(define (update-roster)
+  (define shower-assignments (create-shower-assignments))
+  (define (update-roster-entry entry)
+    (let* ((sa (assoc (rget "name" entry) shower-assignments))
+           (shower (if sa (list-ref sa 1) ""))
+           (time   (if sa (list-ref sa 2) ""))
+           (time   (if (pair? time) (car time) time)))
+      (map (lambda (f) (let ((key (car f)))
+                    (case key
+                      (("shower")      (cons key shower))
+                      (("shower time") (cons key time))
+                      (else f))))
+           entry)))
+  (map update-roster-entry (table-for 'roster)))
+
+;;; * publish
+(define (publish-all [roster-table (update-roster)])
+  (publish-roster roster-table)
+  (publish-rooms)
+  (publish-showers)
+  (publish-jobs)
+  (publish-zendo-jobs)
+  (publish-checklist))
+;;; * diagnostics
+
+;;; People without valid jobs. 
+(define (people-w/bad-jobs)
+  (let* ((j (table-for 'jobs)))
+    (define (bad-job? job)
+      (not (member job (map (lambda (j) (rget "job" j)) j))))
+    (define (bad-jobs-for roster-entry)
+      (let ((jobs (jobs-list roster-entry)))
+        (cons (rget "name" roster-entry)
+              (filter bad-job? jobs))))
+    (filter (lambda (b) (not (null? (cdr b))))
+            (map bad-jobs-for (table-for 'roster)))))
+
+;;; Jobs without people
+(define (jobs-wo/people)
+  (define (job-unfilled? job)
+    (null? (filter
+            identity
+            (map (lambda (roster-entry)
+                   (member job (jobs-list roster-entry)))
+                 (table-for 'roster)))))
+  (filter job-unfilled?
+          (map (lambda (x) (rget "job" x)) (table-for 'jobs))))
+
+;;; People without valid rooms.
+(define (people-w/bad-rooms)
+  (let* ((m (table-for 'bedrooms)))
+    (define (bad-room? room)
+      (not (member room (map (lambda (m) (rget "room" m)) m))))
+    (define (bad-room-for roster-entry)
+      (let ((room (rget "room" roster-entry)))
+        (cons (rget "name" roster-entry)
+              (and (bad-room? room) room))))
+    (filter cdr (map bad-room-for (table-for 'roster)))))
+
+;;; People without valid showers.
+(define (people-w/bad-showers)
+  (let* ((s (table-for 'showers)))
+    (define (bad-shower? shower)
+      (not (member shower (map (lambda (s) (rget "room" s)) s))))
+    (define (bad-shower-for roster-entry)
+      (let ((shower (rget "shower" roster-entry)))
+        (cons (rget "name" roster-entry)
+              (and (bad-shower? shower) shower))))
+    (filter cdr (map bad-shower-for (table-for 'roster)))))
+
+;;; People with bad shower times.
+(define (people-w/bad-shower-times)
+  (let* ((t (table-for 'shower-times)))
+    (define (bad-shower-time? time)
+      (not (member time (map (lambda (t) (rget "time" t)) t))))
+    (define (bad-shower-time-for roster-entry)
+      (let ((time (regularize-hm (rget "shower time" roster-entry))))
+        (cons (rget "name" roster-entry)
+              (and (bad-shower-time? time) time))))
+    (filter cdr (map bad-shower-time-for (table-for 'roster)))))
+
+;;; Shower conflicts
+(define (shower-conflicts)
+  (let* ((s (table-for 'showers))
+         (times      (map cdar (table-for 'shower-times)))
+         (rooms      (map cdar s))
+         (capacities (map (lambda (s) (string->number (cdadr s))) s)))
+    (define (showerers-for time place)
+      (define (tp-match? roster-entry)
+        (and (string=? time  (rget "shower time" roster-entry))
+             (string=? place (rget "shower"      roster-entry))))
+      (map (lambda (x) (rget "name" x))
+           (filter tp-match? (table-for 'roster))))
+    (define (simultaneous-for place)
+      (map (lambda (time) (length (showerers-for time place)))
+           times))
+    (define (conflicts-for place cap)
+      (let* ((s (map (lambda (time) (list time
+                                     place
+                                     (showerers-for time place)))
+                     times))
+             (s (filter (lambda (x) (> (length (list-ref x 2)) cap))
+                        s)))
+        s))
+    (map car
+         (filter (lambda (x) (not (null? x)))
+                 (map conflicts-for rooms capacities)))))
+
+(define (lint [name-len 25])
+  (let ((p (people-w/bad-jobs)))
+    (cond
+     ((null? p) (display "Everyone has a job.\n"))
+     (else
+      (display "People with bad jobs:\n")
+      (let loop ((p p))
+        (when (not (null? p))
+          (display (format "~a  job: ~a~%"
+                           (cat (caar p) (- name-len)) (cadar p)))
+          (loop (cdr p)))))))
+
+  (let ((p (jobs-wo/people)))
+    (display "\n")
+    (cond
+     ((null? p) (display "All jobs are filled.\n"))
+     (else
+      (display "Jobs that aren't filled:\n")
+      (let loop ((p p))
+        (when (not (null? p))
+          (display (format "~a~%" (car p)))
+          (loop (cdr p)))))))
+
+  (let ((p (people-w/bad-rooms)))
+    (display "\n")
+    (cond
+     ((null? p) (display "Everyone has a room.\n"))
+     (else
+      (display "People with bad rooms:\n")
+      (let loop ((p p))
+        (when (not (null? p))
+          (display (format "~a  room: ~a~%"
+                           (cat (caar p) (- name-len)) (cdar p)))
+          (loop (cdr p)))))))
+  
+  (let ((p (people-w/bad-showers)))
+    (display "\n")
+    (cond
+     ((null? p) (display "Everyone has a shower/bath.\n"))
+     (else
+      (display "People with bad showers:\n")
+      (let loop ((p p))
+        (when (not (null? p))
+          (display (format "~a  room: ~a~%"
+                           (cat (caar p) (- name-len)) (cdar p)))
+          (loop (cdr p)))))))
+    
+  (let ((p (people-w/bad-shower-times)))
+    (display "\n")
+    (cond
+     ((null? p) (display "Everyone has a valid shower time.\n"))
+     (else
+      (display "People with bad shower times:\n")
+      (let loop ((p p))
+        (when (not (null? p))
+          (display (format "~a  room: ~a~%"
+                           (cat (caar p) (- name-len)) (cdar p)))
+          (loop (cdr p)))))))
+
+  (let ((p (shower-conflicts)))
+    (display "\n")
+    (cond
+     ((null? p) (display "There are no shower conflicts.\n"))
+     (else
+      (display "Shower conflicts:\n")
+      (let loop ((p p))
+        (when (not (null? p))
+          (let ((time   (list-ref (car p) 0))
+                (place  (list-ref (car p) 1))
+                (people (list-ref (car p) 2)))
+            (display (format "~a at ~a:  ~a~%"
+                             (cat place -15) (cat time 8)
+                             (list-ref (car p) 2))))
+          (loop (cdr p))))))))
 ;;; * main
 
 (define (process-command-line)
