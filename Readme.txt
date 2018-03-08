@@ -19,9 +19,9 @@
 
   The roster.tsv file is the most important and is probably the only one
   that will change from sesshin to sesshin. It lists for each individual
-  participant that participant's room, shower, shower time, job, and so
-  on. The other files simply describe their respective items. For
-  example, rooms.tsv lists the allowable room numbers, and
+  participant that participant's room, possible shower, possible shower
+  time, job, and so on. The other files simply describe their respective
+  items. For example, rooms.tsv lists the allowable room numbers, and
   shower-times.tsv lists the possible shower times.  In what follows the
   word "showers" refers both to showers and to the soaking baths.
 
@@ -35,10 +35,13 @@
   possible shower time slots. For example, if you describe the beginning
   and ending shower times as "8:00am 2:00pm" the program will pick some
   slot either in the rest period immediately after the morning work
-  period or in the one immediately after lunch and will not pick one
-  later in the day. To summarize, you can assign a shower and a shower
-  time, a shower with no shower time, a shower time with no shower or
-  neither.
+  period or in the period immediately after lunch, and will not pick one
+  later in the day. To summarize, you can assign
+
+  • a shower and a shower time,
+  • a shower with no shower time,
+  • a shower time with no shower or
+  • neither a shower or shower time.
 
   In addition to generating the pdf documents sdocs checks to make sure
   the information is coherent and complains if:
