@@ -579,7 +579,8 @@
     (define (r key) (rget key roster-entry))
     (let ((jobs (jobs-desc-list roster-entry)))
       (cons (format-roster-entry
-             (r "name") (r "room") (r "shower")
+             (r "name") (r "room")
+             (if (ignore-shower? roster-entry) "" (r "shower"))
              (regularize-hm (r "shower time"))
              (car jobs))
             (map extra-job-line (cdr jobs)))))
