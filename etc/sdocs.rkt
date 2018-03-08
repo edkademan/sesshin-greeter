@@ -258,6 +258,13 @@
                           output-file-path
                           display-text-to))
 
+(define (regularize-hm time-string)
+  (let ((regex (pregexp "([0-9]+):([0-9]+)\\s*([ap]m)")))
+    (if (not (regexp-match? regex time-string))
+        ""
+        (apply format "~a:~a ~a"
+               (cdr (regexp-match regex time-string))))))
+
 ;;; ** Debug
 
 (define (init-greet [input-subdir "good"])
@@ -378,7 +385,8 @@
   (let ((roster (table-for 'roster)))
     (define (occupants-for time place)
       (define (match? roster-entry)
-        (and (string=? time  (rget "shower time" roster-entry))
+        (and (string=? time (regularize-hm
+                             (rget "shower time" roster-entry)))
              (string=? place (rget "shower"      roster-entry))))
       (let* ((p (filter match? roster))
              (p (map (lambda (x) (rget "name" x)) p)))
@@ -568,7 +576,8 @@
     (define (r key) (rget key roster-entry))
     (let ((jobs (jobs-desc-list roster-entry)))
       (cons (format-roster-entry
-             (r "name") (r "room") (r "shower") (r "shower time")
+             (r "name") (r "room") (r "shower")
+             (regularize-hm (r "shower time"))
              (car jobs))
             (map extra-job-line (cdr jobs)))))
   (let loop ((ros (table-for 'roster))
@@ -748,7 +757,7 @@
     (define (bad-shower-time? time)
       (not (member time (map (lambda (t) (rget "time" t)) t))))
     (define (bad-shower-time-for roster-entry)
-      (let ((time (rget "shower time" roster-entry)))
+      (let ((time (regularize-hm (rget "shower time" roster-entry))))
         (cons (rget "name" roster-entry)
               (and (bad-shower-time? time) time))))
     (filter cdr (map bad-shower-time-for (table-for 'roster)))))
@@ -994,18 +1003,26 @@
     (assoc (cons "room" shower) (table-for 'showers)))))
 
 ;;; The preliminary table may indicate that an individual is to use a
-;;; certain bath, a certain bath time or both.
-(define (initialize-assigs)
-  (define (init-a-info roster-entry)
-    (let* ((n (rget "name" roster-entry))
-           (g (rget "m/f" roster-entry))
-           (r (rget "room" roster-entry))
-           (l (rget "shower" roster-entry))
-           (l (if (string=? l "") 'undefined l))
+;;; certain shower, a certain shower time or both.
+(define (initialize-assigs [roster (table-for 'roster)] [a '()])
+  (define (ignore-entry? e)
+    (regexp-match? #px"[iI]gnore" (rget "shower" e)))
+  (define (process-entry e)
+    (let* ((n (rget "name" e))
+           (g (rget "m/f" e))
+           (r (rget "room" e))
+           (s (rget "shower" e))
+           (s (if (string=? s "") 'undefined s))
            (t (create-shower-interval
-               (rget "shower time" roster-entry))))
-      (list n g r l t)))
-  (map init-a-info (table-for 'roster)))
+               (rget "shower time" e))))
+      (list n g r s t)))
+  (cond
+   ((null? roster) (reverse a))
+   ((ignore-entry? (car roster))
+    (initialize-assigs (cdr roster) a))
+   (else
+    (initialize-assigs (cdr roster)
+                       (cons (process-entry (car roster)) a)))))
 
 ;;; Find a bath and bath time for individual w/possible partial
 ;;; pre-assignment. (a-info is the preliminary
