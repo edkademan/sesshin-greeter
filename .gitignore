@@ -3,3 +3,4 @@ out/
 background
 *~
 test-data/tmp*
+/etc/TAGS

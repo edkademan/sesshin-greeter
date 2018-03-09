@@ -384,20 +384,19 @@
   (text->pdf (pr-rooms) output-file-path))
 ;;; * showers/baths
 
-(define (showers-w/occupants)
-  (let ((roster (table-for 'roster)))
-    (define (occupants-for time place)
-      (define (match? roster-entry)
-        (and (string=? time (regularize-hm
-                             (rget "shower time" roster-entry)))
-             (string=? place (rget "shower"      roster-entry))))
-      (let* ((p (filter match? roster))
-             (p (map (lambda (x) (rget "name" x)) p)))
-        (list time place p)))
-    (map (lambda (time)
-           (map (lambda (place) (occupants-for time place))
-                (map cdar (table-for 'showers))))
-         (map cdar (table-for 'shower-times)))))
+(define (showers-w/occupants roster)
+  (define (occupants-for time place)
+    (define (match? roster-entry)
+      (and (string=? time (regularize-hm
+                           (rget "shower time" roster-entry)))
+           (string=? place (rget "shower"      roster-entry))))
+    (let* ((p (filter match? roster))
+           (p (map (lambda (x) (rget "name" x)) p)))
+      (list time place p)))
+  (map (lambda (time)
+         (map (lambda (place) (occupants-for time place))
+              (map cdar (table-for 'showers))))
+       (map cdar (table-for 'shower-times))))
 
 (define (string-shower-line time occ time-len name-len)
   (los->str-w/nl
@@ -457,7 +456,7 @@
          (s (if (bath? re) (bath->shower s) s)))
     (string-for s)))
 
-(define (string-showers [swo (showers-w/occupants)])
+(define (string-showers swo)
   (string-append
    "Southeast Building\n\n"
    (string-showers-for #px"\\s+SE" swo)
@@ -466,9 +465,12 @@
    "\n\nSoaking Baths\n\n"
    (string-showers-for #px"\\s+Soak" swo)))
 
-(define (publish-showers [output-file-path
+(define (publish-showers [roster-table (table-for 'roster)]
+                         [output-file-path
                           (build-path (output-dir) "showers.pdf")])
-  (text->pdf (string-showers) output-file-path #:font-size 12
+  (text->pdf (string-showers (showers-w/occupants roster-table))
+             output-file-path
+             #:font-size 12
              #:vertical-spacing -2))
 ;;; * jobs
 (define (job-code job-entry)  (cdr (assoc "job" job-entry)))
@@ -962,7 +964,7 @@
 (define (publish-all [roster-table (update-roster)])
   (publish-roster roster-table)
   (publish-rooms)
-  (publish-showers)
+  (publish-showers roster-table)
   (publish-jobs)
   (publish-zendo-jobs)
   (publish-checklist))
