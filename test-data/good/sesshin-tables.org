@@ -116,7 +116,7 @@
 | mt-wt2    | Water Table, After Teisho—Chanting | maintenance |                |
 | mt-wt3    | Water Table, Dinner—9:30 P.M. | maintenance |                |
 | zn-mon    | Monitor    | zendo |                |
-| zn-time   | Timer      | zendo |                |
+| zn-time   | Timer      | zendo | 7:00am 10:00am |
 | zn-block  | Zazen Block | zendo |                |
 | zn-cand   | Candles/Incense | zendo |                |
 | zn-ump    | Head Cook & Umpan | zendo |                |
