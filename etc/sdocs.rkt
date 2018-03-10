@@ -879,7 +879,8 @@
 
 ;;; Find a bath and bath time for individual w/possible partial
 ;;; pre-assignment. (a-info is the preliminary
-;;; name/gender/bedroom/location/showerable-time-interval.)
+;;; name/gender/bedroom/location/showerable-time-interval.) Argument
+;;; assigs is the list of assignments we've already made.
 (define (update-assigs a-info assigs)
   (match-let (((list name gender room loc time) a-info))
     (define (used-already? loc&time)
@@ -899,26 +900,48 @@
                      (hm->min (interval-start time)))
                  (<= (hm->min (interval-stop  s-time))
                      (hm->min (interval-stop  time)))))))
+    (define (sharing-at loc&time offset)
+      (define loc (car loc&time))
+      (define start-min (+ (hm->min (caadr loc&time)) offset))
+      (let loop ((assigs assigs))
+        (cond
+         ((null? assigs) #f)
+         ((and
+           (string=? (list-ref (car assigs) 1) loc)
+           (= (hm->min (car (list-ref (car assigs) 2))) start-min))
+          (list-ref (car assigs) 0))
+         (else (loop (cdr assigs))))))
+    (define (predecessor loc&time) (sharing-at loc&time -20))
+    (define (successor   loc&time) (sharing-at loc&time  20))
+    (define (sex-of name)
+      (rget "m/f" (assoc (cons "name" name) (table-for 'roster))))
+    (define (ok-to-share? loc&time)
+      (let ((p (predecessor loc&time))
+            (s (successor   loc&time)))
+        (and
+         (or (not p) (string=? (sex-of p) gender))
+         (or (not s) (string=? (sex-of s) gender)))))
     (define (good-sex? loc&time)
       (let* ((l (car loc&time))
              (g (cond
                  ((regexp-match? #px"Women" l) "f")
                  ((regexp-match? #px"Men"   l) "m")
                  (else 'undefined))))
-        (or (eq? g 'undefined)
-            (string=? g gender))))
+        (and (ok-to-share? loc&time)
+             (or (eq? g 'undefined)
+                 (string=? g gender)))))
     (define (works? loc&time)
       (and (not (used-already? loc&time))
            (not (time-conflict? loc&time))
            (loc-ok? loc&time)
            (time-ok? loc&time)
            (good-sex? loc&time)))
-    (let loop ((l&t (all-loc&time room)))
+    (let loop ((l&ts (all-loc&time room)))
       (cond
-       ((null? l&t) (backup))
-       ((note (works? (car l&t)))
-        (cons (cons name (car l&t)) assigs))
-       (else (loop (cdr l&t)))))))
+       ((null? l&ts) (backup))
+       ((note (works? (car l&ts)))
+        (cons (cons name (car l&ts)) assigs))
+       (else (loop (cdr l&ts)))))))
 
 (define (create-shower-assignments)
   (let loop ((pre-assigs  (initialize-assigs))
