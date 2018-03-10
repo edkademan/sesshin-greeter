@@ -4,6 +4,9 @@
 1.1 Description
 ───────────────
 
+1.1.1 files
+╌╌╌╌╌╌╌╌╌╌╌
+
   The sdocs program is a command-line utility that usually takes just
   two arguments: an input directory and an output directory. The input
   directory contains the source information in the form of
@@ -22,26 +25,49 @@
   participant that participant's room, possible shower, possible shower
   time, job, and so on. The other files simply describe their respective
   items. For example, rooms.tsv lists the allowable room numbers, and
-  shower-times.tsv lists the possible shower times.  In what follows the
-  word "showers" refers both to showers and to the soaking baths.
+  shower-times.tsv lists the possible shower times.
+
+
+1.1.2 shower assignments
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  In what follows the word "showers" refers both to showers and to the
+  soaking baths.
 
   You can assign to each individual participant a particular shower but
   you don't have to. If you don't the system will assign one for
   you. The same is true for shower times. If you leave that field blank
   the system will pick a time for that individual. The shower that it
   picks will be close to that person's bedroom and the time that it
-  picks will not conflict with that person's job. Also, you can specify
-  a "shower time" that is actually a long span that implies several
-  possible shower time slots. For example, if you describe the beginning
-  and ending shower times as "8:00am 2:00pm" the program will pick some
-  slot either in the rest period immediately after the morning work
-  period or in the period immediately after lunch, and will not pick one
-  later in the day. To summarize, you can assign
+  picks will not conflict with that person's job. If you don't want an
+  individual to have a shower assignment at all just describe their
+  shower as "ignore".
 
-  • a shower and a shower time,
-  • a shower with no shower time,
-  • a shower time with no shower or
-  • neither a shower or shower time.
+  Also, you can specify a "shower time" that is actually a long span
+  that implies several possible shower time slots. For example, if you
+  describe the beginning and ending shower times as "8:00am 2:00pm" the
+  program will pick some slot either in the rest period immediately
+  after the morning work period or in the period immediately after
+  lunch, and will not pick one later in the day.
+
+  To summarize, a shower can be either
+  • a shower as described in showers.tsv or
+  • "ignore" or
+  • blank,
+  a shower time can be
+  • a span such as "8:00am 2:00pm" or
+  • a starting time such as "12:50pm" (This is the same as "12:50pm
+    1:10pm".) or
+  • blank,
+  and the shower/shower-time combination can be
+  • a specific shower and a specific shower time,
+  • a specific shower with no shower time,
+  • a specific shower time with no shower or
+  • neither a shower nor a shower time.
+
+
+1.2 Diagnostics
+───────────────
 
   In addition to generating the pdf documents sdocs checks to make sure
   the information is coherent and complains if:
@@ -63,7 +89,7 @@
   described above for example.)
 
 
-1.2 Operation
+1.3 Operation
 ─────────────
 
   You must open a command prompt window with the Windows CMD
