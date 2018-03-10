@@ -756,52 +756,77 @@
 ;;;
 ;;; Argument bedroomm is a string and showers is a list of strings.
 
-(define (prioritize-showers showers bedroom)
-  (define p<
-    (cond
-     ((regexp-match? #px"SE[^B]|^E" bedroom) ; southeast/east 1st fl.
-      (lambda (a b)
-        (cond
-         ((regexp-match? #px"SE[^B]" a) #t)
-         ((regexp-match? #px"SE[^B]" b) #f)
-         ((regexp-match? #px"SE"     a) #t)
-         ((regexp-match? #px"SE"     b) #f)
-         (else                          #t))))
-     ((regexp-match? #px"SE" bedroom)   ; southeast basement
-      (lambda (a b)
-        (cond
-         ((regexp-match? #px"SEB" a) #t)
-         ((regexp-match? #px"SEB" b) #f)
-         ((regexp-match? #px"SE"  a) #t)
-         ((regexp-match? #px"SE"  b) #f)
-         (else                       #t))))
-     ((regexp-match? #px"W" bedroom)    ; west
-      (lambda (a b)
-        (cond
-         ((regexp-match? #px"NW"   a) #t)
-         ((regexp-match? #px"NW"   b) #f)
-         ((regexp-match? #px"NEB"  a) #t)
-         ((regexp-match? #px"NEB"  b) #f)
-         (else                       #t))))
-     ((regexp-match? #px"NE" bedroom)    ; northeast
-      (lambda (a b)
-        (cond
-         ((regexp-match? #px"NEB" a) #t)
-         ((regexp-match? #px"NEB" b) #f)
-         (else                       #t))))
-     (else (lambda (a b) #t))))
-  (sort showers p<))
+;; Bath SE1     SE 2   SEB 2   W 2   E 2   NE 2   BNE 2
+;; Bath SE4
+;; Shower SEB1
+;; Shower SEB2
+;; Shower SEB3
+;; Bath NW2
+;; Shower NEB1
+;; Shower NEB2
+;; Shower NEB3
+;; Women Soak
+;; Men Soak
+
+(define (good-time? loc&time)
+  (and (member (caadr loc&time) '("8:50 am" "12:50 pm" "5:40 pm"
+                                  "9:40 pm" "10:00 pm"))
+       #t))
 
 (define (all-loc&time bedroom)
-  (let* ((showers (map (lambda (s) (rget "room" s))
-                       (table-for 'showers)))
-         (showers (remove "Bath SE1" showers))
-         (showers (prioritize-showers showers bedroom))
-         (add-intervals (lambda (shower)
-                          (map (lambda (interval)
-                                 (list shower interval))
-                               (shower-intervals)))))
-    (apply append (map add-intervals showers))))
+  (define (a-is-closer a-loc&time b-loc&time)
+    (define a (car a-loc&time))
+    (define b (car b-loc&time))
+    (define (from-se/e)
+      (cond
+       ((regexp-match? #px"SE[^B]" a) #t)
+       ((regexp-match? #px"SE[^B]" b) #f)
+       ((regexp-match? #px"SE"     a) #t)
+       ((regexp-match? #px"SE"     b) #f)
+       (else                          #t)))
+    (define (from-seb)
+      (cond
+       ((regexp-match? #px"SEB" a) #t)
+       ((regexp-match? #px"SEB" b) #f)
+       ((regexp-match? #px"SE"  a) #t)
+       ((regexp-match? #px"SE"  b) #f)
+       (else                       #t)))
+    (define (from-w)
+      (cond
+       ((regexp-match? #px"NW"   a) #t)
+       ((regexp-match? #px"NW"   b) #f)
+       ((regexp-match? #px"NEB"  a) #t)
+       ((regexp-match? #px"NEB"  b) #f)
+       (else                        #t)))
+    (define (from-ne)
+      (cond
+       ((regexp-match? #px"NEB" a) #t)
+       ((regexp-match? #px"NEB" b) #f)
+       (else                       #t)))
+    (cond
+     ((regexp-match? #px"SE[^B]|^E" bedroom) (from-se/e))
+     ((regexp-match? #px"SE" bedroom)        (from-seb))
+     ((regexp-match? #px"W" bedroom)         (from-w))
+     ((regexp-match? #px"NE" bedroom)        (from-ne))
+     (else #t)))
+  (define (for-bedroom a b)
+    (cond
+     ((eq? (good-time? a) (good-time? b))
+      (a-is-closer a b))
+     ((good-time? a) #t)
+     (else #f)))  ; a is not a good time, but b is
+  (define (add-intervals shower)
+    (map (lambda (interval) (list shower interval))
+         (shower-intervals)))
+  (define (shower-location shower-entry) (rget "room" shower-entry))
+
+  (sort
+   (apply append
+          (map add-intervals
+               (remove "Bath SE1"
+                       (map shower-location
+                            (table-for 'showers)))))
+   for-bedroom))
 
 (define *stack* '())
 
