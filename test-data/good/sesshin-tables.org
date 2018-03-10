@@ -239,3 +239,7 @@
 | 10:20 pm |
 |----------|
 
+* local variables
+Local Variables:
+eval: (ejk-org-autoexport-tables "orgtbl-to-tsv" ".tsv" '("roster" "jobs" "rooms" "showers" "shower-times"))
+End:

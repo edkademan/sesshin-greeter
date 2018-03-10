@@ -740,79 +740,53 @@
       (string-interval->time-interval s)
       (shower-start->shower-interval s)))
 
-;;; Sort shower locations by bedroom so that we assign showers that
-;;; are nearby.
-;;;
-;;; |-----+--------------|
-;;; | bed | showers      |
-;;; |-----+--------------|
-;;; | SE  | SE, SEB, ... |
-;;; | SEB | SEB, SE, ... |
-;;; | E   | SE, SEB, ... |
-;;; | W   | NW, NEB, ... |
-;;; | NE  | NEB, ...     |
-;;; | BNE | NEB, ...     |
-;;; |-----+--------------|
-;;;
-;;; Argument bedroomm is a string and showers is a list of strings.
-
-;; Bath SE1     SE 2   SEB 2   W 2   E 2   NE 2   BNE 2
-;; Bath SE4
-;; Shower SEB1
-;; Shower SEB2
-;; Shower SEB3
-;; Bath NW2
-;; Shower NEB1
-;; Shower NEB2
-;; Shower NEB3
-;; Women Soak
-;; Men Soak
-
 (define (good-time? loc&time)
-  (and (member (caadr loc&time) '("8:50 am" "12:50 pm" "5:40 pm"
-                                  "9:40 pm" "10:00 pm"))
+  (and (member (caadr loc&time)
+               '("8:30 am" "8:50 am" "12:50 pm" "5:40 pm"
+                 "9:40 pm" "10:00 pm"))
        #t))
 
-(define (all-loc&time bedroom)
-  (define (a-is-closer a-loc&time b-loc&time)
-    (define a (car a-loc&time))
-    (define b (car b-loc&time))
-    (define (from-se/e)
-      (cond
-       ((regexp-match? #px"SE[^B]" a) #t)
-       ((regexp-match? #px"SE[^B]" b) #f)
-       ((regexp-match? #px"SE"     a) #t)
-       ((regexp-match? #px"SE"     b) #f)
-       (else                          #t)))
-    (define (from-seb)
-      (cond
-       ((regexp-match? #px"SEB" a) #t)
-       ((regexp-match? #px"SEB" b) #f)
-       ((regexp-match? #px"SE"  a) #t)
-       ((regexp-match? #px"SE"  b) #f)
-       (else                       #t)))
-    (define (from-w)
-      (cond
-       ((regexp-match? #px"NW"   a) #t)
-       ((regexp-match? #px"NW"   b) #f)
-       ((regexp-match? #px"NEB"  a) #t)
-       ((regexp-match? #px"NEB"  b) #f)
-       (else                        #t)))
-    (define (from-ne)
-      (cond
-       ((regexp-match? #px"NEB" a) #t)
-       ((regexp-match? #px"NEB" b) #f)
-       (else                       #t)))
+(define (a-is-closer/bedroom? a-loc&time b-loc&time bedroom)
+  (define a (car a-loc&time))
+  (define b (car b-loc&time))
+  (define (from-se/e)
     (cond
-     ((regexp-match? #px"SE[^B]|^E" bedroom) (from-se/e))
-     ((regexp-match? #px"SE" bedroom)        (from-seb))
-     ((regexp-match? #px"W" bedroom)         (from-w))
-     ((regexp-match? #px"NE" bedroom)        (from-ne))
-     (else #t)))
-  (define (for-bedroom a b)
+     ((regexp-match? #px"SE[^B]" a) #t)
+     ((regexp-match? #px"SE[^B]" b) #f)
+     ((regexp-match? #px"SE"     a) #t)
+     ((regexp-match? #px"SE"     b) #f)
+     (else                          #t)))
+  (define (from-seb)
+    (cond
+     ((regexp-match? #px"SEB" a) #t)
+     ((regexp-match? #px"SEB" b) #f)
+     ((regexp-match? #px"SE"  a) #t)
+     ((regexp-match? #px"SE"  b) #f)
+     (else                       #t)))
+  (define (from-w)
+    (cond
+     ((regexp-match? #px"NW"   a) #t)
+     ((regexp-match? #px"NW"   b) #f)
+     ((regexp-match? #px"NEB"  a) #t)
+     ((regexp-match? #px"NEB"  b) #f)
+     (else                        #t)))
+  (define (from-ne)
+    (cond
+     ((regexp-match? #px"NEB" a) #t)
+     ((regexp-match? #px"NEB" b) #f)
+     (else                       #t)))
+  (cond
+   ((regexp-match? #px"SE[^B]|^E" bedroom) (from-se/e))
+   ((regexp-match? #px"SE" bedroom)        (from-seb))
+   ((regexp-match? #px"W" bedroom)         (from-w))
+   ((regexp-match? #px"NE" bedroom)        (from-ne))
+   (else #t)))
+
+(define (all-loc&time bedroom)
+  (define (a-is-closer? a b)
     (cond
      ((eq? (good-time? a) (good-time? b))
-      (a-is-closer a b))
+      (a-is-closer/bedroom? a b bedroom))
      ((good-time? a) #t)
      (else #f)))  ; a is not a good time, but b is
   (define (add-intervals shower)
@@ -826,7 +800,7 @@
                (remove "Bath SE1"
                        (map shower-location
                             (table-for 'showers)))))
-   for-bedroom))
+   a-is-closer?))
 
 (define *stack* '())
 
