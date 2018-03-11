@@ -1,3 +1,22 @@
+                            ━━━━━━━━━━━━━━━━
+                                 README
+
+
+                             Edmund Kademan
+                            ━━━━━━━━━━━━━━━━
+
+
+Table of Contents
+─────────────────
+
+1 Generate sesshin documents
+.. 1.1 Description
+..... 1.1.1 files
+..... 1.1.2 shower assignments
+.. 1.2 Diagnostics
+.. 1.3 Operation
+
+
 1 Generate sesshin documents
 ════════════════════════════
 
@@ -76,10 +95,8 @@
   • there is a job for which no one was assigned
   • someone wasn't assigned a room or was assigned a room that it
     doesn't recognize
-  • someone wasn't assigned a shower or was assigned a shower that it
-    doesn't recognize
-  • someone wasn't assigned a shower time or was assigned one that it
-    doesn't recognize
+  • someone was assigned a shower that it doesn't recognize
+  • someone was assigned a shower time that it doesn't recognize
   • more people were assigned to take a bath at the same time than that
     bath can accommodate.
 

@@ -67,12 +67,10 @@
       - there is a job for which no one was assigned
       - someone wasn't assigned a room or was assigned a room that it
         doesn't recognize
-      - someone wasn't assigned a shower or was assigned a shower that
-        it doesn't recognize
-      - someone wasn't assigned a shower time or was assigned one that
-        it doesn't recognize
+      - someone was assigned a shower that it doesn't recognize
+      - someone was assigned a shower time that it doesn't recognize
       - more people were assigned to take a bath at the same time than
-       that bath can accommodate.
+        that bath can accommodate.
 
    It will try to generate the documents even in the presence of what
    it sees as problems since they may not actually be problems. (You
