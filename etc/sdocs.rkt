@@ -877,6 +877,15 @@
     (initialize-assigs (cdr roster)
                        (cons (process-entry (car roster)) a)))))
 
+(define (gender-for shower time)
+  (let* ((time (if (string? time) time (car time))) ;may be interval
+         (eve (and (not (string=? time ""))
+                   (>= (hm->min time) (hm->min "9:15pm")))))
+    (cond
+     ((and (regexp-match? #px"Women" shower) (not eve)) "f")
+     ((regexp-match? #px"Men" shower) "m")
+     (else 'undefined))))
+
 ;;; Find a bath and bath time for individual w/possible partial
 ;;; pre-assignment. (a-info is the preliminary
 ;;; name/gender/bedroom/location/showerable-time-interval.) Argument
@@ -922,11 +931,7 @@
          (or (not p) (string=? (sex-of p) gender))
          (or (not s) (string=? (sex-of s) gender)))))
     (define (good-sex? loc&time)
-      (let* ((l (car loc&time))
-             (g (cond
-                 ((regexp-match? #px"Women" l) "f")
-                 ((regexp-match? #px"Men"   l) "m")
-                 (else 'undefined))))
+      (let ((g (gender-for (car loc&time) (caadr loc&time))))
         (and (ok-to-share? loc&time)
              (or (eq? g 'undefined)
                  (string=? g gender)))))
@@ -1027,53 +1032,87 @@
     (filter cdr (map bad-room-for (table-for 'roster)))))
 
 ;;; People without valid showers.
-(define (people-w/bad-showers)
-  (let* ((s (table-for 'showers)))
-    (define (bad-shower? shower)
-      (not (member shower (map (lambda (s) (rget "room" s)) s))))
-    (define (bad-shower-for roster-entry)
-      (let ((shower (rget "shower" roster-entry)))
-        (cons (rget "name" roster-entry)
-              (and (bad-shower? shower) shower))))
-    (filter cdr (map bad-shower-for (table-for 'roster)))))
+(define (shower-time-for roster-entry)
+  (let ((time (rget "shower time" roster-entry)))
+    (if (string=? time "")
+        time
+        (regularize-hm
+         (interval-start
+          (create-shower-interval time))))))
 
-;;; People with bad shower times.
+(define (people-w/bad-showers)
+  (let* ((shower-table (table-for 'showers))
+         (showers (map (lambda (s) (rget "room" s)) shower-table))
+         (roster-table (table-for 'roster)))
+    (define (malformed-shower? shower)
+      (not (or (string=? shower "")
+               (regexp-match? #px"[iI]gnore" shower)
+               (member shower showers))))
+    (define (bad-shower-for roster-entry)
+      (let* ((shower (rget "shower" roster-entry))
+             (time (shower-time-for roster-entry))
+             (gender (gender-for shower time))
+             (ok-gender?
+              (or (eq? gender 'undefined)
+                  (string=? gender (rget "m/f" roster-entry)))))
+        (cons (rget "name" roster-entry)
+              (and (or (malformed-shower? shower)
+                       (not ok-gender?)) shower))))
+    (filter cdr (map bad-shower-for roster-table))))
+
+;;; People with unorthodox shower times.
 (define (people-w/bad-shower-times)
-  (let* ((t (table-for 'shower-times)))
+  (let* ((times (map (lambda (t) (rget "time" t))
+                     (table-for 'shower-times))))
     (define (bad-shower-time? time)
-      (not (member time (map (lambda (t) (rget "time" t)) t))))
+      (not (or (string=? time "")
+               (member time times))))
     (define (bad-shower-time-for roster-entry)
-      (let ((time (regularize-hm (rget "shower time" roster-entry))))
+      (let ((time (shower-time-for roster-entry)))
         (cons (rget "name" roster-entry)
               (and (bad-shower-time? time) time))))
     (filter cdr (map bad-shower-time-for (table-for 'roster)))))
 
+(define (gender-conflict? lor)
+  (cond
+   ((null? lor) #f)
+   (else
+    (let loop ((lor lor)
+               (previous (rget "m/f" (car lor))))
+      (cond
+       ((null? lor) #f)
+       ((not (string=? (rget "m/f" (car lor)) previous)) #t)
+       (else (loop (cdr lor) previous)))))))
+
 ;;; Shower conflicts
 (define (shower-conflicts)
-  (let* ((s (table-for 'showers))
-         (times      (map cdar (table-for 'shower-times)))
-         (rooms      (map cdar s))
-         (capacities (map (lambda (s) (string->number (cdadr s))) s)))
-    (define (showerers-for time place)
-      (define (tp-match? roster-entry)
-        (and (string=? time  (rget "shower time" roster-entry))
-             (string=? place (rget "shower"      roster-entry))))
-      (map (lambda (x) (rget "name" x))
-           (filter tp-match? (table-for 'roster))))
-    (define (simultaneous-for place)
-      (map (lambda (time) (length (showerers-for time place)))
-           times))
-    (define (conflicts-for place cap)
-      (let* ((s (map (lambda (time) (list time
-                                     place
-                                     (showerers-for time place)))
-                     times))
-             (s (filter (lambda (x) (> (length (list-ref x 2)) cap))
-                        s)))
-        s))
-    (map car
-         (filter (lambda (x) (not (null? x)))
-                 (map conflicts-for rooms capacities)))))
+  (define (showerers-for shower-time shower)
+    (filter
+     (lambda (roster-entry)
+       (and (string=? (rget "time" shower-time)
+                      (shower-time-for roster-entry))
+            (string=? (rget "room" shower)
+                      (rget "shower" roster-entry))))
+     (table-for 'roster)))
+  (define (conflicts-for shower)
+    (filter
+     (lambda (x)
+       (or (> (length (list-ref x 2))
+              (string->number (rget "capacity" shower)))
+           (gender-conflict? (list-ref x 2))))
+     (map (lambda (shower-time)
+            (list shower-time
+                  shower
+                  (showerers-for shower-time shower)))
+          (table-for 'shower-times))))
+  (map (lambda (x)
+         (let ((x (car x)))
+           (list (rget "time" (list-ref x 0))
+                 (rget "room" (list-ref x 1))
+                 (map (lambda (e) (rget "name" e)) (list-ref x 2)))))
+       (remove*
+        '(())
+        (map conflicts-for (table-for 'showers)))))
 
 (define (lint [name-len 25])
   (let ((p (people-w/bad-jobs)))
@@ -1113,7 +1152,7 @@
   (let ((p (people-w/bad-showers)))
     (display "\n")
     (cond
-     ((null? p) (display "Everyone has a shower/bath.\n"))
+     ((null? p) (display "No invalid shower/bath specifications.\n"))
      (else
       (display "People with bad showers:\n")
       (let loop ((p p))
@@ -1125,9 +1164,9 @@
   (let ((p (people-w/bad-shower-times)))
     (display "\n")
     (cond
-     ((null? p) (display "Everyone has a valid shower time.\n"))
+     ((null? p) (display "No invalid shower time specifications.\n"))
      (else
-      (display "People with bad shower times:\n")
+      (display "People with unorthodox shower times:\n")
       (let loop ((p p))
         (when (not (null? p))
           (display (format "~a  room: ~a~%"
