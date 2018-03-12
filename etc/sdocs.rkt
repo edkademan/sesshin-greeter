@@ -911,24 +911,29 @@
                      (hm->min (interval-stop  time)))))))
     (define (sharing-at loc&time offset)
       (define loc (car loc&time))
-      (define start-min (+ (hm->min (caadr loc&time)) offset))
+      (define start-min
+        (+ (hm->min (interval-start (cadr loc&time))) offset))
       (let loop ((assigs assigs))
         (cond
          ((null? assigs) #f)
          ((and
            (string=? (list-ref (car assigs) 1) loc)
-           (= (hm->min (car (list-ref (car assigs) 2))) start-min))
+           (= start-min
+              (hm->min (interval-start (list-ref (car assigs) 2)))))
           (list-ref (car assigs) 0))
          (else (loop (cdr assigs))))))
     (define (predecessor loc&time) (sharing-at loc&time -20))
+    (define (partner     loc&time) (sharing-at loc&time   0))
     (define (successor   loc&time) (sharing-at loc&time  20))
     (define (sex-of name)
       (rget "m/f" (assoc (cons "name" name) (table-for 'roster))))
     (define (ok-to-share? loc&time)
       (let ((p (predecessor loc&time))
+            (r (partner     loc&time))
             (s (successor   loc&time)))
         (and
          (or (not p) (string=? (sex-of p) gender))
+         (or (not r) (string=? (sex-of r) gender))
          (or (not s) (string=? (sex-of s) gender)))))
     (define (good-sex? loc&time)
       (let ((g (gender-for (car loc&time) (caadr loc&time))))

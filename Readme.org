@@ -68,14 +68,15 @@
       - someone wasn't assigned a room or was assigned a room that it
         doesn't recognize
       - someone was assigned a shower that it doesn't recognize
-      - someone was assigned a shower time that it doesn't recognize
+      - someone was assigned a shower time that looks unusual
       - more people were assigned to take a bath at the same time than
         that bath can accommodate.
 
    It will try to generate the documents even in the presence of what
    it sees as problems since they may not actually be problems. (You
-   might be allowing the program to choose shower assignments in the
-   way described above for example.)
+   might be giving someone an unusual-looking shower time span so that
+   the system can assign one on its own as described above for
+   example.)
 
 ** Operation
    You must open a command prompt window with the Windows CMD
