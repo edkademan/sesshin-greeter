@@ -15,13 +15,20 @@
       - showers.tsv
       - shower-times.tsv
         
-    The roster.tsv file is the most important and is probably the only
-    one that will change from sesshin to sesshin. It lists for each
-    individual participant that participant's room, possible shower,
-    possible shower time, job, and so on. The other files simply
-    describe their respective items. For example, rooms.tsv lists the
-    allowable room numbers, and shower-times.tsv lists the possible
-    shower times.
+    The roster.tsv and jobs.tsv files are the most important and are
+    probably the only ones that will change from sesshin to
+    sesshin. Roster lists for each individual participant that
+    participant's room, possible shower, possible shower time, job,
+    and so on, and jobs lists the code, description, department and a
+    possible time interval for each job. (Here "jobs" refers not only
+    to tasks done during the work periods but also zendo duties.) The
+    time interval specifies a period during which the individual is
+    busy outside the normal work period and is incapable of taking a
+    shower as described below.
+
+    The other files simply describe their respective items. For
+    example, rooms.tsv lists the allowable room numbers, and
+    shower-times.tsv lists the possible shower times.
 
 *** shower assignments
     In what follows the word "showers" refers both to showers and to
@@ -53,9 +60,9 @@
         (This is the same as "12:50pm 1:10pm".) or
       - blank,
     and the shower/shower-time combination can be
-      - a specific shower and a specific shower time,
-      - a specific shower with no shower time,
-      - a specific shower time with no shower or
+      - a shower and a shower time,
+      - a shower with no shower time,
+      - a shower time with no shower or
       - neither a shower nor a shower time.
 
 ** Diagnostics
