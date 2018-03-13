@@ -742,8 +742,7 @@
 
 (define (good-time? loc&time)
   (and (member (caadr loc&time)
-               '("8:30 am" "8:50 am" "12:50 pm" "5:40 pm"
-                 "9:40 pm" "10:00 pm"))
+               '("8:50 am" "12:50 pm" "5:40 pm" "9:40 pm" "10:00 pm"))
        #t))
 
 (define (a-is-closer/bedroom? a-loc&time b-loc&time bedroom)
