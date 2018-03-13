@@ -1,5 +1,5 @@
 * Generate sesshin documents
-
+  Generate sesshin documents
 ** Description
 *** files
     The sdocs program is a command-line utility that usually takes
@@ -110,3 +110,7 @@
      > sdocs -i <...> -o <...> -t "April 2018 7-day Sesshin"
    #+end_example
 
+* local variables
+Local Variables:
+eval: (load-file "Readme.el")
+End:

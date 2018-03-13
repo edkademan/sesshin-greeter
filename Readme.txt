@@ -1,30 +1,11 @@
-                            ━━━━━━━━━━━━━━━━
-                                 README
+Generate sesshin documents
 
 
-                             Edmund Kademan
-                            ━━━━━━━━━━━━━━━━
+1 Description
+═════════════
 
-
-Table of Contents
-─────────────────
-
-1 Generate sesshin documents
-.. 1.1 Description
-..... 1.1.1 files
-..... 1.1.2 shower assignments
-.. 1.2 Diagnostics
-.. 1.3 Operation
-
-
-1 Generate sesshin documents
-════════════════════════════
-
-1.1 Description
-───────────────
-
-1.1.1 files
-╌╌╌╌╌╌╌╌╌╌╌
+1.1 files
+─────────
 
   The sdocs program is a command-line utility that usually takes just
   two arguments: an input directory and an output directory. The input
@@ -47,8 +28,8 @@ Table of Contents
   shower-times.tsv lists the possible shower times.
 
 
-1.1.2 shower assignments
-╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+1.2 shower assignments
+──────────────────────
 
   In what follows the word "showers" refers both to showers and to the
   soaking baths.
@@ -85,8 +66,8 @@ Table of Contents
   • neither a shower nor a shower time.
 
 
-1.2 Diagnostics
-───────────────
+2 Diagnostics
+═════════════
 
   In addition to generating the pdf documents sdocs checks to make sure
   the information is coherent and complains if:
@@ -96,18 +77,18 @@ Table of Contents
   • someone wasn't assigned a room or was assigned a room that it
     doesn't recognize
   • someone was assigned a shower that it doesn't recognize
-  • someone was assigned a shower time that it doesn't recognize
+  • someone was assigned a shower time that looks unusual
   • more people were assigned to take a bath at the same time than that
     bath can accommodate.
 
   It will try to generate the documents even in the presence of what it
   sees as problems since they may not actually be problems. (You might
-  be allowing the program to choose shower assignments in the way
-  described above for example.)
+  be giving someone an unusual-looking shower time span so that the
+  system can assign one on its own as described above for example.)
 
 
-1.3 Operation
-─────────────
+3 Operation
+═══════════
 
   You must open a command prompt window with the Windows CMD
   program. Once inside navigate to the "bin" directory in this
