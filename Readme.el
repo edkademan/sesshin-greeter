@@ -13,7 +13,7 @@
       (save-excursion
         (goto-char (point-min))
         (re-search-forward "^\\*\\s-+Generate sesshin documents")
-        (org-ascii-export-to-ascii nil t nil t
+        (org-ascii-export-to-ascii nil 'subtree nil 'body-only
                                    '(:ascii-charset utf-8)))
       (save-buffer)
       )))

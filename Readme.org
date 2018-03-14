@@ -117,7 +117,6 @@
      > sdocs -i <...> -o <...> -t "April 2018 7-day Sesshin"
    #+end_example
 
-* local variables
-Local Variables:
-eval: (load-file "Readme.el")
-End:
+# Local Variables:
+# eval: (load-file "Readme.el")
+# End:
