@@ -2,5 +2,6 @@
 out/
 background
 *~
-test-data/tmp*
+test-data/*
+!test-data/good
 /etc/TAGS
