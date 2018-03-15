@@ -1079,46 +1079,62 @@
               (and (bad-shower-time? time) time))))
     (filter cdr (map bad-shower-time-for (table-for 'roster)))))
 
-(define (gender-conflict? lor)
+;;; Argument lor is a list of roster entries.
+(define (all-same-gender? lor)
   (cond
-   ((null? lor) #f)
+   ((null? lor) #t)
    (else
     (let loop ((lor lor)
                (previous (rget "m/f" (car lor))))
       (cond
-       ((null? lor) #f)
-       ((not (string=? (rget "m/f" (car lor)) previous)) #t)
+       ((null? lor) #t)
+       ((not (string=? (rget "m/f" (car lor)) previous)) #f)
        (else (loop (cdr lor) previous)))))))
 
-;;; Shower conflicts
+;;; Arguments shower and shower-time are entries from the respective
+;;; tables. For a particular shower and a particular shower time find
+;;; all the people (roster entries) who have been assigned that shower
+;;; at that time---and at the immediately preceeding and succeeding
+;;; times---and check that they are all the same sex. Also check that
+;;; the number of people taking a shower at the particular time does
+;;; not exceed the capacity of the shower.
+(define (having-problems-around shower shower-time)
+  (let* ((shower-cap (string->number (rget "capacity" shower)))
+         (shower (rget "room" shower))
+         (shower-time (rget "time" shower-time))
+         (shower-min (hm->min shower-time))
+         (roster (filter (lambda (r)
+                           (string=? (rget "shower" r) shower))
+                         (table-for 'roster))))
+    (define (same-time? roster-entry)
+      (string=? (shower-time-for roster-entry) shower-time))
+    (define (nearby? roster-entry)
+      (let ((x (hm->min (shower-time-for roster-entry))))
+        (and (< (- shower-min 25) x) (< x (+ shower-min 25)))))
+    (let ((nearby (filter nearby? roster))
+          (same-time (filter same-time? roster)))
+      (cond
+       ((not (all-same-gender? nearby)) nearby)
+       ((> (length same-time) shower-cap) same-time)
+       (else '())))))
+
+;;; Return a list of roster entries.
 (define (shower-conflicts)
-  (define (showerers-for shower-time shower)
-    (filter
-     (lambda (roster-entry)
-       (and (string=? (rget "time" shower-time)
-                      (shower-time-for roster-entry))
-            (string=? (rget "room" shower)
-                      (rget "shower" roster-entry))))
-     (table-for 'roster)))
-  (define (conflicts-for shower)
-    (filter
-     (lambda (x)
-       (or (> (length (list-ref x 2))
-              (string->number (rget "capacity" shower)))
-           (gender-conflict? (list-ref x 2))))
-     (map (lambda (shower-time)
-            (list shower-time
-                  shower
-                  (showerers-for shower-time shower)))
-          (table-for 'shower-times))))
-  (map (lambda (x)
-         (let ((x (car x)))
-           (list (rget "time" (list-ref x 0))
-                 (rget "room" (list-ref x 1))
-                 (map (lambda (e) (rget "name" e)) (list-ref x 2)))))
-       (remove*
-        '(())
-        (map conflicts-for (table-for 'showers)))))
+  (let ((c (map (lambda (shower-time)
+                  (map (lambda (shower)
+                         (having-problems-around shower shower-time))
+                       (table-for 'showers)))
+                (table-for 'shower-times))))
+    (remove* '(()) (apply append c))))
+
+;;; Argument lor is a list of roster entries.
+(define (display-shower-conflict lor)
+  (when (not (null? lor))
+    (display (format "~a at ~a for ~a~%"
+                     (rget "shower" (car lor))
+                     (rget "shower time" (car lor))
+                     (rget "name" (car lor))))
+    (display-shower-conflict (cdr lor))))
 
 (define (lint [name-len 25])
   (let ((p (people-w/bad-jobs)))
@@ -1187,11 +1203,8 @@
       (display "Shower conflicts:\n")
       (let loop ((p p))
         (when (not (null? p))
-          (let ((time   (list-ref (car p) 0))
-                (place  (list-ref (car p) 1))
-                (people (list-ref (car p) 2)))
-            (display (format "~a at ~a:  ~a~%"
-                             (cat place -15) (cat time 8) people)))
+          (display "\n")
+          (display-shower-conflict (car p))
           (loop (cdr p))))))))
 ;;; * main
 
