@@ -877,7 +877,9 @@
                        (cons (process-entry (car roster)) a)))))
 
 (define (gender-for shower time)
-  (let* ((time (if (string? time) time (car time))) ;may be interval
+  (let* ((time (if (string? time)
+                   time
+                   (interval-start time))) ;may be interval
          (eve (and (not (string=? time ""))
                    (>= (hm->min time) (hm->min "9:15pm")))))
     (cond
@@ -1189,8 +1191,7 @@
                 (place  (list-ref (car p) 1))
                 (people (list-ref (car p) 2)))
             (display (format "~a at ~a:  ~a~%"
-                             (cat place -15) (cat time 8)
-                             (list-ref (car p) 2))))
+                             (cat place -15) (cat time 8) people)))
           (loop (cdr p))))))))
 ;;; * main
 
