@@ -25,7 +25,7 @@
 | Kademan, Ed     | m   | ou-snow, mt-wt3, zn-wdrum, zn-greet, zn-hdrum, zn-adrum, zn-zdrum | BNE 8  | Shower NEB3 | 9:40 pm | Stafford, NY | full  |   0 |    0 |
 | Kernan, David   | m   | kt-amc2    | BNE 7  | Shower NEB2 | 9:40 pm | Amherst, NY | full  |   0 |    0 |
 | King, Charles   | m   | kt-pml1, zn-tlect | BNE 2  | Men Soak | 10:00 pm | Toronto, ONTARIO | full  |   0 |    0 |
-| Kjolhede, Bodhin-roshi | m   | zn-echan   | NE 4   |         |         | Rochester, NY | full  |   0 |    0 |
+| Kjolhede, Bodhin-roshi | m   | zn-echan   | NE 4   | ignore me |         | Rochester, NY | full  |   0 |    0 |
 | Kowal, Donna    | f   | kt-dinner, zn-hbook1, zn-atea | E 3    | Women Soak | 9:40 pm | Rochester, NY | full  |   0 |    0 |
 | Kowal, Tom      | m   | zn-time, zn-atea | E 1    | Men Soak | 5:40 pm | Rochester, NY | full  |   0 |    0 |
 | Kubicka, Eryl   | f   | zn-atea    | SE 5   |         |         | Stafford, NY | full  |   0 |    0 |
@@ -44,7 +44,7 @@
 | Oh, Miyeon      | f   | kt-amdd    | BNE 10 | Shower NEB1 | 9:40 pm | Pittsford, NY | full  |   0 |    0 |
 | Ort, Daniel     | m   | kt-amdw    | SEB 3  | Men Soak | 5:40 pm | Kenmore, NY | full  |   0 |    0 |
 | Prince-Cherry, Jeanette | f   | kt-pmdd, zn-greet, zn-ttan, zn-atan, zn-atea, zn-ztan | W 7    | Bath NW2 | 9:40 pm | Louisville, TN | full  |   0 |    0 |
-| Pulleyn, John   | m   | zn-mon, zn-eblock, zn-zkyo, zn-zblock | SE 1A  |         |         | Pittsford, NY | full  |   0 |    0 |
+| Pulleyn, John   | m   | zn-mon, zn-eblock, zn-zkyo, zn-zblock | SE 1A  | ignore me |         | Pittsford, NY | full  |   0 |    0 |
 | Redding, Scott  | m   | kt-pmdw    | SEB 3  | Men Soak | 1:10 pm | East Aurora, NY | full  |   0 |    0 |
 | Robicsek, Susan | f   | kt-salad   | SE 4   | Women Soak | 6:00 pm | Westford, VT | full  |   0 |    0 |
 | Schank, Paula   | f   | kt-apple   | BNE 4  | Women Soak | 10:00 pm | Rochester, NY | full  |   0 |    0 |
@@ -53,7 +53,7 @@
 | Swanson, Grant  | m   | kt-amwtr, zn-atea | NE 1   | Men Soak | 10:20 pm | Carmel, CA | full  |   0 |    0 |
 | Swanson, Phil   | m   | hk-zen1, mt-wt1 | NE 3   | Men Soak | 10:20 pm | Gloucester, MA | full  |   0 |    0 |
 | Targee, Gretchen | f   | kt-veg     | SEB 2  | Women Soak | 10:00 pm | Rochester, NY | full  |   0 |    0 |
-| Taylor, Trueman | m   | zn-mon, zn-hkeisu, zn-zkeisu, zn-zkyo, zn-zbell | SE 1B  |         |         | Rochester, NY | full  |   0 |    0 |
+| Taylor, Trueman | m   | zn-mon, zn-hkeisu, zn-zkeisu, zn-zkyo, zn-zbell | SE 1B  | ignore me |         | Rochester, NY | full  |   0 |    0 |
 | Wilkinson, William | m   | hk-proj1   | BNE 1  | Shower NEB1 | 12:50 pm | Rochester, NY | 2 days |   0 |    0 |
 | Wustner, Joey   | m   | kt-baker, zn-ttan, zn-atan, zn-ztan | E 2    | Men Soak | 9:40 pm | Rochester, N | full  |   0 |    0 |
 |-----------------+-----+------------+--------+---------+---------+-------+-------+-----+------|
