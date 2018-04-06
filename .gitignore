@@ -5,3 +5,4 @@ background
 test-data/*
 !test-data/good
 /etc/TAGS
+tmp/
