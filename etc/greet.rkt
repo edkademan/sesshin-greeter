@@ -496,18 +496,19 @@
                  "November" "December")
                (string->number month)))))
 
+;;; I am on the lookout for a more general solution to this. Maybe
+;;; there exists a latex package/environment that can handle big
+;;; European alphabets.
+(define (escape str [tr '((#px"&"         . "\\\\&")
+                          (#px"\\s*–\\s*" . "---")
+                          (#px"é"         . "\\\\'e")
+                          (#px"ü"         . "\\\\\"u"))])
+  (cond
+   ((null? tr) str)
+   (else
+    (escape (regexp-replace* (caar tr) str (cdar tr)) (cdr tr)))))
+
 (define (create-latex-table s filename)
-  ;; I am on the lookout for a more general solution to this. Maybe
-  ;; there exists a latex package/environment that can handle big
-  ;; European alphabets.
-  (define (escape str [tr '((#px"&"         . "\\\\&")
-                            (#px"\\s*–\\s*" . "---")
-                            (#px"é"         . "\\\\'e")
-                            (#px"ü"         . "\\\\\"u"))])
-    (cond
-     ((null? tr) str)
-     (else
-      (escape (regexp-replace* (caar tr) str (cdar tr)) (cdr tr)))))
   (define (p out)
     (define (jobs-string r)
       (let* ((j (map (lambda (x) (format " \\\\~%\\> ~a" (escape x)))
@@ -559,9 +560,65 @@
 
   (call-with-output-file filename p #:exists 'replace))
 
+(define (create-latex-slips s tex-file)
+  ;; jobs->2cols takes a list of jobs---as strings---and returns a
+  ;; list of rows for the jobs table. Each row has two entries.
+  (define (jobs->2cols jobs)
+    (let* ((n  (length jobs))
+           (n1 (if (<= n 6)
+                   (min n 3)
+                   (ceiling (/ n 2))))
+           (jobs (map escape jobs))
+           (col1 (take jobs n1))
+           (col2 (drop jobs n1))
+           (col2 (append col2 (build-list (- (* 2 n1) n)
+                                          (lambda (n) (string))))))
+      (map list col1 col2)))
+  (define (latex out)
+    ;; Argument p is the name, room and so on for a participant.
+    (define (info->tex p)
+      (let ((shower-time (car (s-shower p)))
+            (shower      (cdr (s-shower p)))
+            (jobs        (append (s-jobs p) (s-duties p))))
+        (display (format "
+          \\begin{minipage}[t]{7.5in}{
+          ~a ~a
+
+          \\begin{tabular*}{7.5in}[t]{lllll}
+          room: ~a && shower: ~a && shower time: ~a \\\\
+          \\end{tabular*}
+
+          \\begin{tabular*}{7.5in}[t]{lll}
+          \\\\
+          jobs: \\\\~%"
+          (escape (last-name (s-name p)))
+          (escape (first-name (s-name p)))
+          (s-room p) shower shower-time) out)
+        (for-each
+         (lambda (r) (display (format "~a && ~a \\\\~%"
+                                 (list-ref r 0)
+                                 (list-ref r 1)) out))
+         (jobs->2cols jobs))
+        (display "
+          \\end{tabular*}
+          \\vspace{.5cm}}\\end{minipage}\n" out)))
+    (display "
+      \\documentclass[12pt]{article}
+      \\setlength{\\textheight}{11in}
+      \\voffset -1.5in
+      \\hoffset -1.0in
+      \\begin{document}
+      \\noindent\n" out)
+    (for-each info->tex s)
+    (display "\\end{document}\n" out))
+
+  (call-with-output-file tex-file latex #:exists 'replace))
+
 ;;; * main
 
 (define (main start-date)
+  (define (pdflatex tex-file)
+    (system (format "pdflatex ~a;pdflatex ~a" tex-file tex-file)))
   (set! *start-date* start-date)
   (define roster (map name-w/comma->pair
                       (read-doc #px"[Rr]oster" process-roster)))
@@ -575,7 +632,9 @@
          (this-sesshin
           (collect-fields roster room-assignments shower-assignments
                           job-assignments zendo-duties))
-         (tex (format "~a/~a-sesshin.tex" *tmp-dir* *start-date*))
-         (cmd (format "pdflatex ~a;pdflatex ~a;" tex tex)))
-    (create-latex-table this-sesshin tex)
-    (system cmd)))
+         (tex-tab (format "~a/~a-sessh.tex" *tmp-dir* *start-date*))
+         (tex-slp (format "~a/~a-slips.tex" *tmp-dir* *start-date*)))
+    (create-latex-table this-sesshin tex-tab)
+    (create-latex-slips this-sesshin tex-slp)
+    (pdflatex tex-tab)
+    (pdflatex tex-slp)))
