@@ -6,7 +6,6 @@
    - shower time
    - up to 8 jobs/duties
 
-     *****************************************************************
      Ed Kademan
      |-------------+---------------+----------------------|
      | room: NEB 8 | shower: NEB 2 | shower time: 12:50pm |
@@ -20,11 +19,9 @@
      | Closing Ceremony Drum | Opening Ceremony Drum | Chanting Drum |
      | Work Drum             | Timer                 | Water Table   |
      |-----------------------+-----------------------+---------------|
-     *****************************************************************
 
    - or maybe
 
-     *****************************************************************
      Ed Kademan
      |-------+--------+-------------|
      | room  | shower | shower time |
@@ -40,4 +37,10 @@
      | Closing Ceremony Drum | Opening Ceremony Drum | Chanting Drum |
      | Work Drum             | Timer                 | Water Table   |
      |-----------------------+-----------------------+---------------|
-     *****************************************************************
+
+** jobs table
+   To fill the 2-column jobs table let $n$ be the number of
+   jobs/duties and put the first $n_1$ entries in the first column and
+   the remaining $n_2$ in the second. Let $n_1$ be $\min(n,3)$ if
+   $n\le 6$ or $\lceil\frac{n}2\rceil$ if $n>6$, and then set
+   $n_2=n-n_1$.
