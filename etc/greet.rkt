@@ -270,6 +270,9 @@
 
 ;;; * zendo duties
 (define (process-zendo-duties in)
+  (define (next-line)
+    (let ((l (read-line in 'any)))
+      (if (eof-object? l) l (regexp-replace #px"\\s*$" l ""))))
   (define (deleteable-line? l)
     (or (regexp-match? #px"^[\\s\uFEFF]*[Zz]endo\\s*[Dd]utie" l)
         (regexp-match? #px"^\\s*$" l)))
@@ -302,23 +305,23 @@
         "" prefix))
   (define (job-title prefix job)
     (if (string=? prefix "") job (format "~a ~a" prefix job)))
-  (let loop ((l (read-line in 'any))
+  (let loop ((l (next-line))
              (r (list))
              (pre "")
              (previous-job ""))
     (cond
      ((eof-object? l) (collect-jobs r))
      ((deleteable-line? l)
-      (loop (read-line in 'any) r pre previous-job))
+      (loop (next-line) r pre previous-job))
      ((prefix-line? l)
-      (loop (read-line in 'any) r (unpad l) previous-job))
+      (loop (next-line) r (unpad l) previous-job))
      (else
       (let* ((pre (update-prefix pre l))
              (mj (multi-job-line? l))
              (l (if mj (list-ref mj 1) l))
              (current-job (extract-job l previous-job))
              (current-name (extract-name l)))
-        (loop (if mj (list-ref mj 2) (read-line in 'any))
+        (loop (if mj (list-ref mj 2) (next-line))
               (if (not current-name)
                   r
                   (cons (cons current-name
