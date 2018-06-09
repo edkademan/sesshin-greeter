@@ -157,6 +157,34 @@
        ((abbrev-match))
        (else #f)))))
 
+;;; The routines inside this test should be local to
+;;; make-name-regularizer.
+(define (test-teacher-match roster)
+  (define reg (pregexp "(?i:-(sensei|roshi))"))
+  (define (teacher-type? name)
+    (or (regexp-match? reg (first-name name))
+        (regexp-match? reg (last-name  name))))
+  (define (clean-name name)
+    (build-name (regexp-replace reg (last-name  name) "")
+                (regexp-replace reg (first-name name) "")))
+  ;; Assume that name2 consists of first and last names.
+  (define (teacher-match? name1 name2)
+    (and (teacher-type? name1)
+         (teacher-type? name2)
+         (let ((name1 (clean-name name1))
+               (name2 (clean-name name2)))
+           (cond
+            ((null? (first-name name1))
+             (string=? (last-name name1) (first-name name2)))
+            (else (name=? name1 name2))))))
+  (define (found-as-teacher name)
+    (let ((r (filter (lambda (roster-name)
+                       (teacher-match? name roster-name))
+                     roster)))
+      (and (not (null? r))
+           (car r))))
+  )
+
 (define (test-regularizer)
   (define regularize-name
     (make-name-regularizer '(("Leiserson" . "Anna Belle")
