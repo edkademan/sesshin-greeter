@@ -120,8 +120,13 @@
 ;;;   - a single string consisting of initial(s) with or without
 ;;;     periods (eg, "AB" or "A.B." or "A.")
 ;;;   - missing altogether.
-;;; This regularizer function returns the equivalent name in the
-;;; roster---or #f if it can't find one.
+;;; and returns the corresponding name in the roster---or #f if it
+;;; can't find one.
+;;;
+;;; Names can refer to teachers. For example if there is an entry in
+;;; the roster of the form "Goldmann, Robert-sensei" the regularizer
+;;; function will return that entry for "Goldmann-sensei" and
+;;; "Robert-sensei".
 (define (make-name-regularizer roster)
   (define (abbrev name)
     (build-name
@@ -129,12 +134,14 @@
      (apply string-append
             (map (lambda (x) (substring x 0 1))
                  (regexp-split #px"\\s+" (first-name name))))))
+
+  ;; Find a match for an ordinary participant.
   (define (add-abbrev name) (cons (abbrev name) name))
   (define (abbrev-for name) (car name))
   (define (full-name name)  (cdr name))
   (define (abbrev=? name1 name2)
     (name=? name1 (abbrev-for name2)))
-  (lambda (name)
+  (define (find-ordinary-match name)
     (let ((possibles
            (filter (lambda (x) (string=? (last-name x) (last-name name)))
                    roster)))
@@ -155,40 +162,49 @@
        ;; we have two or more hits
        ((exact-match))
        ((abbrev-match))
-       (else #f)))))
+       (else #f))))
 
-;;; The routines inside this test should be local to
-;;; make-name-regularizer.
-(define (test-teacher-match roster)
+  ;; Find a match for a teacher.
   (define reg (pregexp "(?i:-(sensei|roshi))"))
   (define (teacher-type? name)
-    (or (regexp-match? reg (first-name name))
-        (regexp-match? reg (last-name  name))))
+    (or (regexp-match? reg (last-name  name))
+        (and (not (null? (first-name name)))
+             (regexp-match? reg (first-name name)))))
   (define (clean-name name)
-    (build-name (regexp-replace reg (last-name  name) "")
-                (regexp-replace reg (first-name name) "")))
-  ;; Assume that name2 consists of first and last names.
-  (define (teacher-match? name1 name2)
-    (and (teacher-type? name1)
-         (teacher-type? name2)
-         (let ((name1 (clean-name name1))
-               (name2 (clean-name name2)))
-           (cond
-            ((null? (first-name name1))
-             (string=? (last-name name1) (first-name name2)))
-            (else (name=? name1 name2))))))
-  (define (found-as-teacher name)
-    (let ((r (filter (lambda (roster-name)
-                       (teacher-match? name roster-name))
-                     roster)))
-      (and (not (null? r))
-           (car r))))
-  )
+    (build-name
+     (regexp-replace reg (last-name  name) "")
+     (if (null? (first-name name))
+         '()
+         (regexp-replace reg (first-name name) ""))))
+  ;; Arguments name and roster-name are already known to be teachers.
+  (define (teacher-match? name roster-name)
+    (let ((cleaned-name (clean-name name))
+          (cleaned-roster-name (clean-name roster-name)))
+      (or (and (not (null? (first-name cleaned-name)))
+               (name=? cleaned-name cleaned-roster-name))
+          (string=? (last-name cleaned-name)
+                    (last-name cleaned-roster-name))
+          (string=? (last-name cleaned-name)
+                    (first-name cleaned-roster-name)))))
+  (define (get-full-name teacher-name)
+    (define (t-match? roster-teacher-name)
+      (teacher-match? teacher-name roster-teacher-name))
+    (let* ((full-names (filter teacher-type? roster))
+           (full-names (filter t-match? full-names)))
+      (and (not (null? full-names))
+           (car full-names))))
+  (define (find-teacher-match name)
+    (and (teacher-type? name) (get-full-name name)))
+  (lambda (name)
+    (or (find-ordinary-match name)
+        (find-teacher-match  name))))
 
 (define (test-regularizer)
   (define regularize-name
     (make-name-regularizer '(("Leiserson" . "Anna Belle")
-                             ("Leiserson" . "Allan"))))
+                             ("Leiserson" . "Allan")
+                             ("Goldmann" . "Robert-sensei")
+                             ("Kjolhede" . "Bodhin-roshi"))))
   (define (should-match n1 n2)
     (let ((r (regularize-name n1)))
       (cond
@@ -213,10 +229,16 @@
   (let ((abl   '("Leiserson" . "Anna Belle"))
         (abli  '("Leiserson" . "AB"))
         (al    '("Leiserson" . "Allan"))
-        (ali   '("Leiserson" . "A.")))
+        (ali   '("Leiserson" . "A."))
+        (rsg   '("Goldmann" . "Robert-sensei"))
+        (rs    '("Robert-sensei"))
+        (gs    '("Goldmann-sensei")))
     (should-match     abl  abl)
     (should-match     abli abl)
     (should-match     ali  al)
+    (should-match     rsg  rsg)
+    (should-match     rs   rsg)
+    (should-match     gs   rsg)
     (should-not-match ali  abl)
     (should-not-match abli al)))
 
