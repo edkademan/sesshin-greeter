@@ -634,14 +634,14 @@
             (shower      (cdr (s-shower p)))
             (jobs        (append (s-jobs p) (s-duties p))))
         (display (format "
-          \\begin{minipage}[t]{7.5in}{
+          \\slip\\begin{minipage}[t]{7.5in}
           ~a ~a
 
-          \\begin{tabular*}{7.5in}[t]{lllll}
+          \\begin{tabular*}{\\swidth}[t]{lllll}
           room: ~a && shower: ~a && shower time: ~a \\\\
           \\end{tabular*}
 
-          \\begin{tabular*}{7.5in}[t]{lll}
+          \\begin{tabular*}{\\swidth}[t]{lll}
           \\\\
           jobs: \\\\~%"
           (escape (last-name (s-name p)))
@@ -653,16 +653,19 @@
                                  (list-ref r 1)) out))
          (jobs->2cols jobs))
         (display "
-          \\end{tabular*}
-          \\vspace{.5cm}}\\end{minipage}\n" out)))
+          \\end{tabular*}\\end{minipage}
+          \\rule{\\swidth}{.02in}" out)))
     (display "
       \\documentclass[12pt]{article}
       \\setlength{\\textheight}{11in}
       \\voffset -1.5in
       \\hoffset -1.0in
+      \\newcommand{\\swidth}{7.5in}
+      \\newcommand{\\slip}{
+         \\begin{minipage}[t]{0in}\\vspace{1.75in}\\end{minipage}}
       \\begin{document}
-      \\noindent\n" out)
-    (for-each info->tex s)
+      \\noindent" out)
+    (for-each info->tex (sort s name<? #:key s-name))
     (display "\\end{document}\n" out))
 
   (call-with-output-file tex-file latex #:exists 'replace))
