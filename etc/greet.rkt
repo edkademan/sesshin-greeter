@@ -634,7 +634,7 @@
             (shower      (cdr (s-shower p)))
             (jobs        (append (s-jobs p) (s-duties p))))
         (display (format "
-          \\slip\\begin{minipage}[t]{7.5in}
+          \\slip\\begin{minipage}[t]{\\swidth}
           ~a ~a
 
           \\begin{tabular*}{\\swidth}[t]{lllll}
