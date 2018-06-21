@@ -634,7 +634,7 @@
             (shower      (cdr (s-shower p)))
             (jobs        (append (s-jobs p) (s-duties p))))
         (display (format "
-          \\begin{minipage}[t]{7.5in}{
+          \\slip\\begin{minipage}[t]{7.5in}{
           ~a ~a
 
           \\begin{tabular*}{7.5in}[t]{lllll}
@@ -660,6 +660,8 @@
       \\setlength{\\textheight}{11in}
       \\voffset -1.5in
       \\hoffset -1.0in
+      \\newcommand{\\slip}{
+         \\begin{minipage}[t]{0in}\\vspace{2in}\\end{minipage}}
       \\begin{document}
       \\noindent\n" out)
     (for-each info->tex s)
