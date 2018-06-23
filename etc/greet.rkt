@@ -507,6 +507,7 @@
         (loop roster (if (roomless? record) r (cons record r))))))))
 
 ;;; * publish
+;;; ** table
 (define (work r)
   (let* ((w (append (s-jobs r) (s-duties r))))
     (if (null? w) '("") w)))
@@ -613,6 +614,29 @@
 
   (call-with-output-file filename p #:exists 'replace))
 
+;;; ** slips
+(define (sort-slips s)
+  (define (index->order k)
+    (let* ((n-per-page    5)
+           (pages-per-cut 3)
+           (n-per-cut     (* n-per-page pages-per-cut)))
+      (+ (* n-per-page (remainder k pages-per-cut))
+         (quotient k pages-per-cut)
+         (* (quotient k n-per-cut) n-per-page (- pages-per-cut 1)))))
+  (define (add-order s)
+    (let loop ((k 0) (s s) (r '()))
+      (if (null? s)
+          r
+          (loop (+ k 1) (cdr s)
+                (cons
+                 (cons (index->order k) (car s))
+                 r)))))
+  (let* ((s (sort s name<? #:key s-name))
+         (s (add-order s))
+         (s (sort s < #:key car))
+         (s (map cdr s)))
+    s))
+
 (define (create-latex-slips s tex-file)
   ;; jobs->2cols takes a list of jobs---as strings---and returns a
   ;; list of rows for the jobs table. Each row has two entries.
@@ -665,7 +689,7 @@
          \\begin{minipage}[t]{0in}\\vspace{1.75in}\\end{minipage}}
       \\begin{document}
       \\noindent" out)
-    (for-each info->tex (sort s name<? #:key s-name))
+    (for-each info->tex (sort-slips s))
     (display "\\end{document}\n" out))
 
   (call-with-output-file tex-file latex #:exists 'replace))
