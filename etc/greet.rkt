@@ -617,7 +617,7 @@
 ;;; ** slips
 (define (sort-slips s)
   (define (index->order k)
-    (let* ((n-per-page    5)
+    (let* ((n-per-page    4)
            (pages-per-cut 3)
            (n-per-cut     (* n-per-page pages-per-cut)))
       (+ (* n-per-page (remainder k pages-per-cut))
@@ -686,7 +686,7 @@
       \\hoffset -1.0in
       \\newcommand{\\swidth}{7.5in}
       \\newcommand{\\slip}{
-         \\begin{minipage}[t]{0in}\\vspace{1.75in}\\end{minipage}}
+         \\begin{minipage}[t]{0in}\\vspace{2in}\\end{minipage}}
       \\begin{document}
       \\noindent" out)
     (for-each info->tex (sort-slips s))
