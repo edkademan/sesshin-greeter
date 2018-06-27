@@ -8,4 +8,6 @@
 ### The `--main' option invokes the procedure called "main" with the
 ### command line arguments.
 
-racket --require ~/rzc/sesshin-greeter/etc/greet.rkt --main $*
+(cd /tmp
+ racket --require ~/rzc/sesshin-greeter/etc/greet.rkt --main $*)
+cp /tmp/$1-{sessh,slips}.pdf .
