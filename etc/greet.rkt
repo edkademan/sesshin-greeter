@@ -682,7 +682,6 @@
     (display "
       \\documentclass[12pt]{article}
       \\setlength{\\textheight}{11in}
-      \\voffset -1.5in
       \\hoffset -1.0in
       \\newcommand{\\swidth}{7.5in}
       \\newcommand{\\slip}{
