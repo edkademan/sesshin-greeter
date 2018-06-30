@@ -617,7 +617,7 @@
 ;;; ** slips
 (define (sort-slips s)
   (define (index->order k)
-    (let* ((n-per-page    4)
+    (let* ((n-per-page    5)
            (pages-per-cut 3)
            (n-per-cut     (* n-per-page pages-per-cut)))
       (+ (* n-per-page (remainder k pages-per-cut))
@@ -659,7 +659,7 @@
             (jobs        (append (s-jobs p) (s-duties p))))
         (display (format "
           \\slip\\begin{minipage}[t]{\\swidth}
-          ~a ~a
+          ~a, ~a
 
           \\begin{tabular*}{\\swidth}[t]{lllll}
           room: ~a && shower: ~a && shower time: ~a \\\\
@@ -682,10 +682,12 @@
     (display "
       \\documentclass[12pt]{article}
       \\setlength{\\textheight}{11in}
+      \\voffset -.5in
       \\hoffset -1.0in
       \\newcommand{\\swidth}{7.5in}
       \\newcommand{\\slip}{
-         \\begin{minipage}[t]{0in}\\vspace{2in}\\end{minipage}}
+        \\begin{minipage}[t]{0in}\\vspace{2in}\\end{minipage}
+        \\vspace{-.23in}}
       \\begin{document}
       \\noindent" out)
     (for-each info->tex (sort-slips s))
