@@ -616,13 +616,13 @@
 
 ;;; ** slips
 (define (sort-slips s)
+  (define pages-per-cut 3)
+  (define n-per-page    5)
+  (define n-per-cut     (* n-per-page pages-per-cut))
   (define (index->order k)
-    (let* ((n-per-page    5)
-           (pages-per-cut 3)
-           (n-per-cut     (* n-per-page pages-per-cut)))
-      (+ (* n-per-page (remainder k pages-per-cut))
-         (quotient k pages-per-cut)
-         (* (quotient k n-per-cut) n-per-page (- pages-per-cut 1)))))
+    (+ (* n-per-page (remainder k pages-per-cut))
+       (quotient k pages-per-cut)
+       (* (quotient k n-per-cut) n-per-page (- pages-per-cut 1))))
   (define (add-order s)
     (let loop ((k 0) (s s) (r '()))
       (if (null? s)
@@ -631,7 +631,17 @@
                 (cons
                  (cons (index->order k) (car s))
                  r)))))
+  (define (add-dummy-slips s)
+    (define (generate-dummies s)
+      (define n (length s))
+      (let loop ((a (- (* n-per-cut (ceiling (/ n n-per-cut))) n))
+                 (r '()))
+        (if (zero? a)
+            r
+            (loop (- a 1) (cons (car s) r)))))
+    (append s (generate-dummies s)))
   (let* ((s (sort s name<? #:key s-name))
+         (s (add-dummy-slips s))
          (s (add-order s))
          (s (sort s < #:key car))
          (s (map cdr s)))
@@ -678,7 +688,8 @@
          (jobs->2cols jobs))
         (display "
           \\end{tabular*}\\end{minipage}
-          \\rule{\\swidth}{.02in}" out)))
+          \\noindent\\makebox[\\linewidth]{\\rule{15in}{.02in}}"
+                 out)))
     (display "
       \\documentclass[12pt]{article}
       \\setlength{\\textheight}{11in}
