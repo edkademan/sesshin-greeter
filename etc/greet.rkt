@@ -615,14 +615,24 @@
   (call-with-output-file filename p #:exists 'replace))
 
 ;;; ** slips
+(define pages-per-cut  3)
+(define n-per-page     5)
+(define n-per-cut      (* n-per-page pages-per-cut))
+(define (generate-dummies d [r '()])
+  (if (zero? d)
+      r
+      (generate-dummies
+       (- d 1)
+       ;;                     name room shower jobs zendo
+       (cons (build-s-record '("" . "") "" '("" . "") '() '()) r))))
+(define (neaten-slips s)
+  (let ((n (length s)))
+    (append s (generate-dummies
+               (- (* n-per-page (ceiling (/ n n-per-page))) n)))))
 (define (sort-slips s)
-  (define pages-per-cut  3)
-  (define n-per-page     5)
-  (define n-per-cut      (* n-per-page pages-per-cut))
-  (define n-total        (length s))
-  (define cuts-total     (ceiling (/ n-total n-per-cut)))
-  (define n-in-final-cut (- n-total (* n-per-cut (- cuts-total 1))))
-  (define (index->order k)
+  (define (index->order k n-total)
+    (define cuts-total     (ceiling (/ n-total n-per-cut)))
+    (define n-in-final-cut (- n-total (* n-per-cut (- cuts-total 1))))
     (let* ((pages-per-cut
             (if (= cuts-total (+ 1 (quotient k n-per-cut)))
                 (+ 1 (quotient (- n-in-final-cut 1) n-per-page))
@@ -631,15 +641,16 @@
            (k (- k s)))
       (let-values ([(xn xp) (quotient/remainder k pages-per-cut)])
         (+ xn (* xp n-per-page) s))))
-  (define (add-order s)
+  (define (add-order s [n-total (length s)])
     (let loop ((k 0) (s s) (r '()))
       (if (null? s)
           r
           (loop (+ k 1) (cdr s)
                 (cons
-                 (cons (index->order k) (car s))
+                 (cons (index->order k n-total) (car s))
                  r)))))
   (let* ((s (sort s name<? #:key s-name))
+         (s (neaten-slips s))
          (s (add-order s))
          (s (sort s < #:key car))
          (s (map cdr s)))
@@ -722,14 +733,6 @@
          (this-sesshin
           (collect-fields roster room-assignments shower-assignments
                           job-assignments zendo-duties))
-
-
-         (this-sesshin
-          (cons (car this-sesshin) this-sesshin))
-         (this-sesshin
-          (cons (car this-sesshin) this-sesshin))
-
-
          (tex-tab (format "~a/~a-sessh.tex" *tmp-dir* *start-date*))
          (tex-slp (format "~a/~a-slips.tex" *tmp-dir* *start-date*)))
     (create-latex-table this-sesshin tex-tab)
