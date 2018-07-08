@@ -616,13 +616,21 @@
 
 ;;; ** slips
 (define (sort-slips s)
-  (define pages-per-cut 3)
-  (define n-per-page    5)
-  (define n-per-cut     (* n-per-page pages-per-cut))
+  (define pages-per-cut  3)
+  (define n-per-page     5)
+  (define n-per-cut      (* n-per-page pages-per-cut))
+  (define n-total        (length s))
+  (define cuts-total     (ceiling (/ n-total n-per-cut)))
+  (define n-in-final-cut (- n-total (* n-per-cut (- cuts-total 1))))
   (define (index->order k)
-    (+ (* n-per-page (remainder k pages-per-cut))
-       (quotient k pages-per-cut)
-       (* (quotient k n-per-cut) n-per-page (- pages-per-cut 1))))
+    (let* ((pages-per-cut
+            (if (= cuts-total (+ 1 (quotient k n-per-cut)))
+                (+ 1 (quotient (- n-in-final-cut 1) n-per-page))
+                pages-per-cut))
+           (s (* n-per-cut (quotient k n-per-cut)))
+           (k (- k s)))
+      (let-values ([(xn xp) (quotient/remainder k pages-per-cut)])
+        (+ xn (* xp n-per-page) s))))
   (define (add-order s)
     (let loop ((k 0) (s s) (r '()))
       (if (null? s)
@@ -631,17 +639,7 @@
                 (cons
                  (cons (index->order k) (car s))
                  r)))))
-  (define (add-dummy-slips s)
-    (define (generate-dummies s)
-      (define n (length s))
-      (let loop ((a (- (* n-per-cut (ceiling (/ n n-per-cut))) n))
-                 (r '()))
-        (if (zero? a)
-            r
-            (loop (- a 1) (cons (car s) r)))))
-    (append s (generate-dummies s)))
   (let* ((s (sort s name<? #:key s-name))
-         (s (add-dummy-slips s))
          (s (add-order s))
          (s (sort s < #:key car))
          (s (map cdr s)))
@@ -724,6 +722,14 @@
          (this-sesshin
           (collect-fields roster room-assignments shower-assignments
                           job-assignments zendo-duties))
+
+
+         (this-sesshin
+          (cons (car this-sesshin) this-sesshin))
+         (this-sesshin
+          (cons (car this-sesshin) this-sesshin))
+
+
          (tex-tab (format "~a/~a-sessh.tex" *tmp-dir* *start-date*))
          (tex-slp (format "~a/~a-slips.tex" *tmp-dir* *start-date*)))
     (create-latex-table this-sesshin tex-tab)
