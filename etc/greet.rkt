@@ -244,7 +244,7 @@
 
 ;;; * rooms
 (define (process-rooms in)
-  (define (participant? l) (regexp-match? #px"•" l))
+  (define (participant? l) (regexp-match? #px"•.*\\S" l))
   (define (room-occupant l)
     (let* ((r (cadr (regexp-match #px"•(.*)" l)))
            (r (regexp-replace #px"\\(.*" r ""))
