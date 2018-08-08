@@ -1,0 +1,36 @@
+#!/bin/bash
+
+### Rerun the greet program on old doc files to make sure it still
+### works. To add a new test case, include the start date of the
+### sesshin in the variable `starts' and put the corresponding sessh
+### and slips files---both pdf and txt---in the historical directory.
+
+home=~/rzc/sesshin-greeter
+historical_dir=$home/test-data/out-previous
+destination_dir=$home/test-data/out-current
+log=$home/tmp/test-log.org
+
+starts="2018-01-06 2018-02-23 2018-04-07 2018-06-09 2018-07-28"
+
+greet() {
+  echo "*" $1
+  $home/etc/greet $1
+}
+
+diff_docs() {
+  pdftotext $1-sessh.pdf
+  pdftotext $1-slips.pdf
+  diff $1-sessh.txt $historical_dir/$1-sessh.txt
+  diff $1-slips.txt $historical_dir/$1-slips.txt
+}
+
+rm -rf $log $destination_dir
+mkdir $destination_dir
+cd $destination_dir
+for s in $starts; do
+  echo
+  echo $s
+  greet $s >> $log 2>&1
+  echo comparing
+  diff_docs $s
+done
