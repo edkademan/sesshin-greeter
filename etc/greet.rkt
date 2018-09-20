@@ -57,10 +57,14 @@
     (system cmd)
     (call-with-input-file txt process-proc)))
 
-;;; Trim leading and trailing space.
+;;; Trim leading and trailing whitespace.
+;;; There is some strange character that I had to include in the
+;;; regular expression that prints as whitespace but that is
+;;; considered a word constituent---at least as far as emacs is
+;;; concerned.
 (define (unpad str)
-  (let* ((str (regexp-replace #px"^\\s*" str ""))
-         (str (regexp-replace #px"\\s*$" str "")))
+  (let* ((str (regexp-replace #px"^[\\s﻿]*" str ""))
+         (str (regexp-replace #px"[\\s﻿]*$" str "")))
     str))
 
 ;;; Transform "Smith, John" to ("Smith" . "John").
