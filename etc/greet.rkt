@@ -593,16 +593,19 @@
        out))
     (display (format "
       \\documentclass[10pt]{article}
-      \\usepackage{charter}
-      \\usepackage{longtable}
+      \\usepackage{charter, longtable}
+      \\usepackage[table]{xcolor}
       \\hoffset -1.0in
       \\setlength{\\textwidth}{6.5in}
       \\setlength{\\textheight}{9in}
+      \\definecolor{Odd}{gray}{0.7}
+      \\definecolor{Even}{gray}{1.0}
       \\begin{document}
 
       \\pagestyle{myheadings}
       \\markboth{~a}{~a}
 
+      \\rowcolors{2}{Odd}{Even}
       \\begin{longtable}{lllrl}
        & room & shower & time & jobs/duties \\\\ \\hline
        \\endhead
