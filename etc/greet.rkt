@@ -101,18 +101,20 @@
 
 ;;; * roster
 (define (process-roster in)
-  (define (true-name? l n)
-    (and (= (modulo n 2) 0) (regexp-match? #px"," l)))
+  (define (ignore? l)
+    (or (regexp-match? #px"^\\s*$" l)
+        (regexp-match? #px"[0-9]{4}" l)
+        (not (regexp-match? #px"," l))))
   (define (cl name)   ;clean name
     (regexp-replace #px"\\s*\\(.*" name ""))
   (let loop ((l (read-line in 'any))
-             (r (list))
-             (n 0))
-    (if (eof-object? l)
-        r
-        (loop (read-line in 'any)
-              (if (true-name? l n) (cons (cl l) r) r)
-              (+ n 1)))))
+             (r (list)))
+    (cond
+     ((eof-object? l) r)
+     ((ignore? l) (loop (read-line in 'any) r))
+     (else
+      (read-line in 'any)               ;ignore hometown
+      (loop (read-line in 'any) (cons (cl l) r))))))
 
 ;;; Return a regularizer function that takes an argument `name' of the
 ;;; form
@@ -493,11 +495,6 @@
            (r (member name lst (lambda (x y) (name=? x (car y)))))
            (r (if r (cdar r) dummy)))
       r))
-  ;; Identify person for whom I could not find a room---probably
-  ;; because his/her name was too complicated. This is almost
-  ;; certainly the teacher who is never going to consult this stuff
-  ;; anyway.
-  (define (roomless? record) (string=? (s-room record) ""))
   (let loop ((roster roster)
              (r (list)))
     (cond
@@ -511,7 +508,7 @@
                       (find-entry person shower-assignments)
                       (find-entry person job-assignments)
                       (find-entry person zendo-duties))))
-        (loop roster (if (roomless? record) r (cons record r))))))))
+        (loop roster (cons record r)))))))
 
 ;;; * publish
 ;;; ** table
