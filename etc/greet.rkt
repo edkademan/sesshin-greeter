@@ -134,15 +134,19 @@
 ;;; function will return that entry for "Goldmann-sensei" and
 ;;; "Robert-sensei".
 (define (make-name-regularizer roster)
-  (define (abbrev name)
+  (define (abbrev name n)
     (build-name
      (last-name name)
      (apply string-append
-            (map (lambda (x) (substring x 0 1))
+            (map (lambda (x) (substring x 0 (min n (string-length x))))
                  (regexp-split #px"\\s+" (first-name name))))))
 
   ;; Find a match for an ordinary participant.
-  (define (add-abbrev name) (cons (abbrev name) name))
+  (define (add-abbrevs name)
+    (let loop ((n 1) (r '()))
+      (if (> n (string-length (first-name name)))
+          r
+          (loop (+ n 1) (cons (cons (abbrev name n) name) r)))))
   (define (abbrev-for name) (car name))
   (define (full-name name)  (cdr name))
   (define (abbrev=? name1 name2)
@@ -155,7 +159,7 @@
         (let ((r (member name possibles name=?)))
           (and r (car r))))
       (define (abbrev-match)
-        (let ((possibles (map add-abbrev possibles))
+        (let ((possibles (apply append (map add-abbrevs possibles)))
               (name (build-name
                      (last-name name)
                      (regexp-replace*
