@@ -101,20 +101,32 @@
 
 ;;; * roster
 (define (process-roster in)
-  (define (ignore? l)
-    (or (regexp-match? #px"^\\s*$" l)
-        (regexp-match? #px"[0-9]{4}" l)
-        (not (regexp-match? #px"," l))))
-  (define (cl name)   ;clean name
-    (regexp-replace #px"\\s*\\(.*" name ""))
-  (let loop ((l (read-line in 'any))
-             (r (list)))
-    (cond
-     ((eof-object? l) r)
-     ((ignore? l) (loop (read-line in 'any) r))
-     (else
-      (read-line in 'any)               ;ignore hometown
-      (loop (read-line in 'any) (cons (cl l) r))))))
+  (define (blank? line) (regexp-match? #px"^\\s*$" line))
+  (define (part-time? line) (regexp-match? #px"Time:\\s*$" line))
+  (define (clean name)   ;clean name
+    (let* ((_ name)
+           (_ (regexp-replace #px"\\s*\\(.*" _ ""))
+           (_ (if (regexp-match #px"," _)
+                  _
+                  (regexp-replace #px" " _ ", "))))
+      _))
+  (let loop ((line (read-line in 'any))
+             (ignoring #t)
+             (_ '()))
+    (if (eof-object? line)
+        _
+        (let ((next-line (read-line in 'any)))
+          (cond
+           ((and (not ignoring) (not (blank? line))) ;line is name
+            (loop (read-line in 'any) #f (cons (clean line) _)))
+           ((not ignoring)              ;blank so enter header
+            (loop next-line #t _))
+           (else                        ;ignoring
+            (loop next-line
+                  (and (not (blank? line))
+                       (or (not (part-time? line))
+                           (blank? next-line)))
+                  _)))))))
 
 ;;; Return a regularizer function that takes an argument `name' of the
 ;;; form
