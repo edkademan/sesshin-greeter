@@ -163,10 +163,14 @@
   (define (full-name name)  (cdr name))
   (define (abbrev=? name1 name2)
     (name=? name1 (abbrev-for name2)))
+  (define (match-last roster-name candidate-name)
+    (let* ((c-last (last-name candidate-name)) ;perhaps abbreviated
+           (r-last (last-name roster-name))
+           (r-last (substring r-last 0 (min (string-length r-last)
+                                            (string-length c-last)))))
+      (string=? c-last r-last)))
   (define (find-ordinary-match name)
-    (let ((possibles
-           (filter (lambda (x) (string=? (last-name x) (last-name name)))
-                   roster)))
+    (let ((possibles (filter (lambda (x) (match-last x name)) roster)))
       (define (exact-match)
         (let ((r (member name possibles name=?)))
           (and r (car r))))
@@ -743,6 +747,13 @@
     (display "\\end{document}\n" out))
 
   (call-with-output-file tex-file latex #:exists 'replace))
+
+;;; * debug
+(set! *start-date* "2019-11-02")
+(define roster (map name-w/comma->pair
+                    (read-doc #px"[Rr]oster" process-roster)))
+(set! regularize-name (make-name-regularizer roster))
+(define x (read-doc #px"[Ss]hower" process-showers #:table #t))
 
 ;;; * main
 
