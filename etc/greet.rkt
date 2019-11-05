@@ -11,7 +11,7 @@
 (define (dir-path)
   (build-path
    (find-system-path 'home-dir)
-   "rzc/sesshin-greeter" *start-date*))
+   "rzc/sesshin-greeter/sesshins" *start-date*))
 
 ;;; Return the doc file path whose name matches the regular expression
 ;;; re.
