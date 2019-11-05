@@ -446,12 +446,10 @@
                (entries (map clean entries))
                (entries (cons (minutes-of-day (car entries))
                               (cdr entries)))
-               (mod (car entries))
-               (r (if (not (and (not (zero? mod)) (< mod m)))
-                      r
-                      (cons
-                       (cons 0 (map (lambda (x) "Soak") (cdr entries)))
-                       r))))
+               (mod (car entries)))
+          (when (and (not (zero? mod)) (< mod m))
+            (set! r (cons '(0 "Women Soak" "Women Soak"
+                              "Men Soak" "Men Soak") r)))
           (loop (read-line in 'linefeed)
                 (cons entries r)
                 mod)))))
