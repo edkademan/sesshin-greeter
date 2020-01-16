@@ -165,10 +165,11 @@
     (name=? name1 (abbrev-for name2)))
   (define (match-last roster-name candidate-name)
     (let* ((c-last (last-name candidate-name)) ;perhaps abbreviated
+           (c-las- (regexp-replace* #px"-" c-last " "))
            (r-last (last-name roster-name))
            (r-last (substring r-last 0 (min (string-length r-last)
                                             (string-length c-last)))))
-      (string=? c-last r-last)))
+      (or (string=? c-last r-last) (string=? c-las- r-last))))
   (define (find-ordinary-match name)
     (let ((possibles (filter (lambda (x) (match-last x name)) roster)))
       (define (exact-match)
@@ -230,7 +231,8 @@
     (make-name-regularizer '(("Leiserson" . "Anna Belle")
                              ("Leiserson" . "Allan")
                              ("Goldmann" . "Robert-sensei")
-                             ("Kjolhede" . "Bodhin-roshi"))))
+                             ("Kjolhede" . "Bodhin-roshi")
+                             ("Caltvedt Scheider" . "Emily"))))
   (define (should-match n1 n2)
     (let ((r (regularize-name n1)))
       (cond
@@ -260,15 +262,28 @@
         (ali2  '("Leiserson" . "Al"))
         (rsg   '("Goldmann" . "Robert-sensei"))
         (rs    '("Robert-sensei"))
-        (gs    '("Goldmann-sensei")))
+        (gs    '("Goldmann-sensei"))
+        (ecs   '("Caltvedt Scheider" . "Emily"))
+        (ec    '("Caltvedt" . "Emily"))
+        (cs    '("Caltvedt-S"))
+        (cs2   '("Caltvedt-S" . "Emily")))
+
     (should-match     abl   abl)
     (should-match     abli  abl)
     (should-match     abli2 abl)
+
     (should-match     ali   al)
     (should-match     ali2  al)
+
     (should-match     rsg   rsg)
     (should-match     rs    rsg)
     (should-match     gs    rsg)
+
+    (should-match     ecs   ecs)
+    (should-match     ec    ecs)
+    (should-match     cs    ecs)
+    (should-match     cs2   ecs)
+
     (should-not-match ali   abl)
     (should-not-match ali2  abl)
     (should-not-match abli  al)))
@@ -747,11 +762,11 @@
   (call-with-output-file tex-file latex #:exists 'replace))
 
 ;;; * debug
-(set! *start-date* "2019-11-02")
+(set! *start-date* "2020-01-04")
 (define roster (map name-w/comma->pair
                     (read-doc #px"[Rr]oster" process-roster)))
 (set! regularize-name (make-name-regularizer roster))
-(define x (read-doc #px"[Ss]hower" process-showers #:table #t))
+;; (define x (read-doc #px"[Rr]oom" process-rooms))
 
 ;;; * main
 
