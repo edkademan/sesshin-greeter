@@ -164,7 +164,8 @@
   (define (abbrev=? name1 name2)
     (name=? name1 (abbrev-for name2)))
   (define (match-last roster-name candidate-name)
-    (let* ((c-last (last-name candidate-name)) ;perhaps abbreviated
+    (let* ((c-last (last-name candidate-name))
+           (c-last (regexp-replace* #px"\\." c-last ""))
            (c-las- (regexp-replace* #px"-" c-last " "))
            (r-last (last-name roster-name))
            (r-last (substring r-last 0 (min (string-length r-last)
