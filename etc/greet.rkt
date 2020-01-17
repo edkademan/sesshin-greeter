@@ -266,8 +266,8 @@
         (gs    '("Goldmann-sensei"))
         (ecs   '("Caltvedt Scheider" . "Emily"))
         (ec    '("Caltvedt" . "Emily"))
-        (cs    '("Caltvedt-S"))
-        (cs2   '("Caltvedt-S" . "Emily")))
+        (cs    '("Caltvedt-S."))
+        (cs2   '("Caltvedt-S." . "Emily")))
 
     (should-match     abl   abl)
     (should-match     abli  abl)
@@ -763,10 +763,10 @@
   (call-with-output-file tex-file latex #:exists 'replace))
 
 ;;; * debug
-(set! *start-date* "2020-01-04")
-(define roster (map name-w/comma->pair
-                    (read-doc #px"[Rr]oster" process-roster)))
-(set! regularize-name (make-name-regularizer roster))
+;; (set! *start-date* "2020-01-04")
+;; (define roster (map name-w/comma->pair
+;;                     (read-doc #px"[Rr]oster" process-roster)))
+;; (set! regularize-name (make-name-regularizer roster))
 ;; (define x (read-doc #px"[Rr]oom" process-rooms))
 
 ;;; * main
